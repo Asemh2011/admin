@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام مدارس الأمل الحديثة</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Cairo -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Cairo', sans-serif; }
@@ -22,7 +19,6 @@
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-3 space-x-reverse">
                 <div id="schoolLogoContainer" class="bg-white text-indigo-700 p-2 rounded-xl font-bold shadow flex items-center justify-center w-12 h-12 overflow-hidden">
-                    <!-- Default or Custom Logo -->
                     <i id="defaultLogoIcon" class="fa-solid fa-graduation-cap text-2xl"></i>
                     <img id="customLogoImg" src="" alt="شعار المدرسة" class="hidden w-full h-full object-cover">
                 </div>
@@ -273,7 +269,7 @@
             <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-wrap justify-between items-center gap-4">
                 <div>
                     <h2 id="teacherWelcomeTitle" class="text-xl font-bold text-slate-800">لوحة تحكم المعلم</h2>
-                    <p id="teacherSubtitle" class="text-sm text-slate-500">ادخل درجات مادتك بدقة. لا يمكنك تعديل درجات مواد المعلمين الآخرين.</p>
+                    <p id="teacherSubtitle" class="text-sm text-slate-500">ادخل درجات مادتك بدقة. التعديل والحذف النهائي يتم عبر الإدارة فقط.</p>
                 </div>
                 <div id="classLeaderBadge" class="hidden bg-emerald-100 text-emerald-800 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 border border-emerald-200">
                     <i class="fa-solid fa-award text-sm"></i> <span>أنت رائد فصل (<span id="leaderClassSpan"></span>)</span>
@@ -282,79 +278,79 @@
 
             <!-- Tabs for Teacher -->
             <div class="flex gap-2 flex-wrap">
-                <button onclick="switchTeacherTab('grades')" id="teacherTabGradesBtn" class="px-4 py-2 rounded-xl text-sm font-bold bg-emerald-600 text-white transition"><i class="fa-solid fa-pen-to-square ml-1"></i> إدخال وتعديل درجات مادتك</button>
-                <button onclick="switchTeacherTab('classStudents')" id="teacherTabClassStudentsBtn" class="hidden px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition"><i class="fa-solid fa-user-plus ml-1"></i> إضافة طلاب لفصلي</button>
+                <button onclick="switchTeacherTab('grades')" id="teacherTabGradesBtn" class="px-4 py-2 rounded-xl text-sm font-bold bg-emerald-600 text-white transition"><i class="fa-solid fa-pen-to-square ml-1"></i> إدخال درجات مادتك</button>
+                <button onclick="switchTeacherTab('classStudents')" id="teacherTabClassStudentsBtn" class="hidden px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition"><i class="fa-solid fa-user-plus ml-1"></i> إضافة طالب لفصلي</button>
                 <button onclick="switchTeacherTab('complaints')" id="teacherTabComplaintsBtn" class="hidden px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition"><i class="fa-solid fa-comments ml-1"></i> شكاوى أولياء الأمور <span id="complaintBadgeCount" class="bg-red-500 text-white px-1.5 py-0.5 rounded-full text-xs">0</span></button>
             </div>
 
-        <div id="teacherGradesPanel" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-6">
-            <div class="flex flex-wrap items-center justify-between gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
-                <div class="flex flex-wrap items-center gap-4">
+            <div id="teacherGradesPanel" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-6">
+                <div class="flex flex-wrap items-center justify-between gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <div class="flex flex-wrap items-center gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">اختر الصف المستهدف</label>
+                            <select id="teacherTargetGrade" onchange="loadTeacherStudentsTable()" class="p-2 bg-white border border-slate-200 rounded-xl text-sm">
+                                <!-- Populated via JS -->
+                            </select>
+                        </div>
+                        <div class="text-xs text-slate-500">
+                            <i class="fa-solid fa-circle-info text-emerald-600"></i> مادتك الحالية: (<span id="currentTeacherSubjectSpan" class="font-bold text-slate-700"></span>).
+                        </div>
+                    </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">اختر الصف المستهدف</label>
-                        <select id="teacherTargetGrade" onchange="loadTeacherStudentsTable()" class="p-2 bg-white border border-slate-200 rounded-xl text-sm">
-                            <!-- Populated via JS -->
-                        </select>
-                    </div>
-                    <div class="text-xs text-slate-500">
-                        <i class="fa-solid fa-circle-info text-emerald-600"></i> مادتك الحالية: (<span id="currentTeacherSubjectSpan" class="font-bold text-slate-700"></span>).
+                        <button onclick="openGradeSchemaModal()" class="px-4 py-2 bg-emerald-700 text-white rounded-xl text-xs font-bold shadow hover:bg-emerald-800 transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-sliders"></i> تخصيص توزيع درجات المادة (من 100)
+                        </button>
                     </div>
                 </div>
-                <div>
-                    <button onclick="openGradeSchemaModal()" class="px-4 py-2 bg-emerald-700 text-white rounded-xl text-xs font-bold shadow hover:bg-emerald-800 transition flex items-center gap-1.5">
-                        <i class="fa-solid fa-sliders"></i> تخصيص توزيع درجات المادة (من 100)
-                    </button>
-                </div>
-            </div>
 
-            <div class="overflow-x-auto">
-                <table class="w-full text-right text-sm">
-                    <thead id="teacherGradesTableHead" class="bg-slate-100 text-slate-600 text-xs uppercase">
-                        <!-- Injected via JS based on teacher schema -->
-                    </thead>
-                    <tbody id="teacherGradesTableBody" class="divide-y divide-slate-100">
-                        <!-- Injected via JS -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Class Students Addition Panel (For Class Leader) -->
-        <div id="teacherClassStudentsPanel" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-6">
-            <h3 class="font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-user-plus text-emerald-600"></i> إضافة طالب جديد إلى فصلي الدراسي (<span id="leaderClassTitleSpan"></span>)</h3>
-            <p class="text-xs text-slate-500">ملاحظة: يمكنك كمعلم إضافة الطلاب الجدد لفصلك، ولكن التعديل أو الحذف النهائي يتم حصراً عبر إدارة المدرسة.</p>
-            <form onsubmit="handleLeaderAddStudent(event)" class="max-w-md space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">اسم الطالب الكامل</label>
-                    <input type="text" id="leaderNewStudentName" required class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-emerald-600">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">رقم التسجيل (فريد)</label>
-                    <input type="text" id="leaderNewStudentRegNo" required placeholder="مثال: 2026102" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-emerald-600">
-                </div>
-                <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm shadow transition">إضافة الطالب للفصل</button>
-            </form>
-
-            <div class="mt-4">
-                <h4 class="font-bold text-slate-800 text-sm mb-3">قائمة طلاب فصلي الحاليين (للعرض والإضافة فقط):</h4>
                 <div class="overflow-x-auto">
                     <table class="w-full text-right text-sm">
-                        <thead class="bg-slate-100 text-slate-600 text-xs uppercase">
-                            <tr>
-                                <th class="p-3 rounded-r-xl">رقم التسجيل</th>
-                                <th class="p-3">اسم الطالب</th>
-                                <th class="p-3 rounded-l-xl text-center">الحالة</th>
-                            </tr>
+                        <thead id="teacherGradesTableHead" class="bg-slate-100 text-slate-600 text-xs uppercase">
+                            <!-- Injected via JS based on teacher schema -->
                         </thead>
-                        <tbody id="leaderStudentsTableBody" class="divide-y divide-slate-100">
+                        <tbody id="teacherGradesTableBody" class="divide-y divide-slate-100">
                             <!-- Injected via JS -->
                         </tbody>
                     </table>
                 </div>
             </div>
-        </div>
 
-        <!-- Complaints Panel -->
+            <!-- Class Students Addition Panel (For Class Leader) -->
+            <div id="teacherClassStudentsPanel" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-6">
+                <h3 class="font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-user-plus text-emerald-600"></i> إضافة طالب جديد إلى فصلي الدراسي (<span id="leaderClassTitleSpan"></span>)</h3>
+                <p class="text-xs text-slate-500">ملاحظة: يمكنك كمعلم إضافة الطلاب الجدد لفصلك، ولكن أي تعديل أو حذف يتم حصراً عبر إدارة المدرسة.</p>
+                <form onsubmit="handleLeaderAddStudent(event)" class="max-w-md space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">اسم الطالب الكامل</label>
+                        <input type="text" id="leaderNewStudentName" required class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-emerald-600">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">رقم التسجيل (فريد)</label>
+                        <input type="text" id="leaderNewStudentRegNo" required placeholder="مثال: 2026102" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-emerald-600">
+                    </div>
+                    <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm shadow transition">إضافة الطالب للفصل</button>
+                </form>
+
+                <div class="mt-4">
+                    <h4 class="font-bold text-slate-800 text-sm mb-3">قائمة طلاب فصلي الحاليين:</h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right text-sm">
+                            <thead class="bg-slate-100 text-slate-600 text-xs uppercase">
+                                <tr>
+                                    <th class="p-3 rounded-r-xl">رقم التسجيل</th>
+                                    <th class="p-3">اسم الطالب</th>
+                                    <th class="p-3 rounded-l-xl text-center">الحالة</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leaderStudentsTableBody" class="divide-y divide-slate-100">
+                                <!-- Injected via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Complaints Panel -->
             <div id="teacherComplaintsPanel" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
                 <h3 class="font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-inbox text-emerald-600"></i> شكاوى واستفسارات أولياء أمور طلاب فصلي</h3>
                 <div id="complaintsListContainer" class="space-y-4">
@@ -405,7 +401,7 @@
                 <!-- Student Grades & Notes Card -->
                 <div class="md:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
                     <h3 class="font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-chart-line text-amber-600"></i> جدول درجات المواد والملاحظات</h3>
-                    <p class="text-xs text-slate-500">تنبيه: أولي الأمر للاطلاع والاستعلام فقط، لا يمكن تعديل أي درجة.</p>
+                    <p class="text-xs text-slate-500">تنبيه: أولي الأمر للاطلاع والاستعلام فقط، لا يمكن تعديل أو حذف أي درجة.</p>
                     
                     <div class="overflow-x-auto">
                         <table class="w-full text-right text-sm">
@@ -413,7 +409,7 @@
                                 <tr>
                                     <th class="p-3 rounded-r-xl">المادة الدراسية</th>
                                     <th class="p-3">الأستاذ المسؤول</th>
-                                    <th class="p-3">الدرجة</th>
+                                    <th class="p-3">الدرجة التفصيلية</th>
                                     <th class="p-3 rounded-l-xl">ملاحظات الأستاذ</th>
                                 </tr>
                             </thead>
@@ -489,12 +485,6 @@
                     <label class="block text-xs font-semibold text-slate-600 mb-1">رائد الفصل</label>
                     <select id="editTeacherLeadClass" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-emerald-600">
                         <option value="">-- ليس رائد فصل --</option>
-                        <option value="الرابع الأساسي">رائد فصل الرابع الأساسي</option>
-                        <option value="الخامس الأساسي">رائد فصل الخامس الأساسي</option>
-                        <option value="السادس الأساسي">رائد فصل السادس الأساسي</option>
-                        <option value="السابع الأساسي">رائد فصل السابع الأساسي</option>
-                        <option value="الثامن الأساسي">رائد فصل الثامن الأساسي</option>
-                        <option value="التاسع الأساسي">رائد فصل التاسع الأساسي</option>
                     </select>
                 </div>
                 <div class="flex justify-end gap-2 pt-2">
@@ -569,8 +559,6 @@
             'التاسع الأساسي'
         ];
 
-        const subjectsList = ['رياضيات', 'لغة عربية', 'علوم', 'لغة إنجليزية', 'دراسات اجتماعية', 'تربية إسلامية'];
-
         let schoolGrades = JSON.parse(localStorage.getItem('amal_school_grades_list')) || defaultGradesClasses;
         let students = JSON.parse(localStorage.getItem('amal_school_students')) || defaultStudents;
         let teachers = JSON.parse(localStorage.getItem('amal_school_teachers')) || defaultTeachers;
@@ -578,7 +566,6 @@
         let gradeSchemas = JSON.parse(localStorage.getItem('amal_school_schemas')) || {};
         let complaints = JSON.parse(localStorage.getItem('amal_school_complaints')) || [];
         let schoolLogo = localStorage.getItem('amal_school_logo') || '';
-
         let currentSession = JSON.parse(localStorage.getItem('amal_school_session')) || null;
 
         window.onload = function() {
@@ -679,8 +666,8 @@
                 contentEl.innerHTML = `
                     <form onsubmit="handleLogin(event, 'teacher')" class="space-y-4">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">اسم المستخدم للمعلم</label>
-                            <input type="text" id="loginUsername" required placeholder="مثال: khaled" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-emerald-600">
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">اسم المستخدم</label>
+                            <input type="text" id="loginUsername" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-emerald-600">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">كلمة المرور</label>
@@ -731,7 +718,7 @@
                     restoreSession();
                     showToast(`أهلاً بك يا أستاذ ${teacher.name}`);
                 } else {
-                    showToast('بيانات الدخول غير صحيحة، تأكد من اسم المستخدم وكلمة المرور', 'error');
+                    showToast('بيانات الدخول غير صحيحة', 'error');
                 }
             } else if (role === 'parent') {
                 const regNo = document.getElementById('parentRegNo').value.trim();
@@ -1019,7 +1006,15 @@
             document.getElementById('editTeacherUsername').value = t.username;
             document.getElementById('editTeacherPassword').value = t.password;
             document.getElementById('editTeacherSubject').value = t.subject;
-            document.getElementById('editTeacherLeadClass').value = t.leadClass || '';
+            
+            const sel = document.getElementById('editTeacherLeadClass');
+            let opts = '<option value="">-- ليس رائد فصل --</option>';
+            schoolGrades.forEach(g => {
+                opts += `<option value="${g}">${g}</option>`;
+            });
+            sel.innerHTML = opts;
+            sel.value = t.leadClass || '';
+
             document.getElementById('editTeacherModal').classList.remove('hidden');
         }
 
@@ -1106,12 +1101,12 @@
                 return;
             }
 
-            students.push({ id: regNo, name, grade });
+            students.push({ id: regNo, name, grade, addedByTeacher: true });
             saveToLocalStorage();
             renderLeaderStudentsTable();
             document.getElementById('leaderNewStudentName').value = '';
             document.getElementById('leaderNewStudentRegNo').value = '';
-            showToast('تم إضافة الطالب إلى فصلك بنجاح');
+            showToast('تمت إضافة الطالب لفصلك بنجاح (التعديل والحذف حصراً من الإدارة)');
         }
 
         function renderLeaderStudentsTable() {
@@ -1132,7 +1127,7 @@
                         <td class="p-3 font-mono font-bold text-emerald-700">${s.id}</td>
                         <td class="p-3 font-semibold text-slate-800">${s.name}</td>
                         <td class="p-3 text-center">
-                            <span class="text-xs text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">مسجل (التعديل والحذف بواسطة الإدارة)</span>
+                            <span class="text-xs text-slate-500 bg-slate-100 px-3 py-1 rounded-lg">مسجل (التعديل والحذف حصراً من الإدارة)</span>
                         </td>
                     </tr>
                 `;
@@ -1155,10 +1150,10 @@
             const container = document.getElementById('schemaItemsContainer');
             container.innerHTML = '';
             
-            schema.forEach((item, index) => {
+            schema.forEach((item) => {
                 container.innerHTML += `
                     <div class="flex items-center gap-2 schema-row">
-                        <input type="text" value="${item.name}" placeholder="اسم البند (مثال: سلوك)" class="flex-grow p-2 bg-slate-50 border border-slate-200 rounded-xl text-sm schema-name">
+                        <input type="text" value="${item.name}" placeholder="اسم البند" class="flex-grow p-2 bg-slate-50 border border-slate-200 rounded-xl text-sm schema-name">
                         <input type="number" min="1" max="100" value="${item.max}" placeholder="الدرجة القصوى" class="w-28 p-2 bg-slate-50 border border-slate-200 rounded-xl text-sm schema-max font-bold text-center">
                         <button type="button" onclick="this.parentElement.remove()" class="text-red-500 hover:text-red-700 px-2 py-1 text-xs"><i class="fa-solid fa-trash"></i></button>
                     </div>
@@ -1239,20 +1234,17 @@
             const gradeStudents = students.filter(s => s.grade === grade);
 
             if (gradeStudents.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="${schema.length + 4}" class="p-4 text-center text-slate-400">لا يوجد طلاب مسجلين في هذا الصف</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${schema.length + 3}" class="p-4 text-center text-slate-400">لا يوجد طلاب مسجلين في هذا الصف</td></tr>`;
                 return;
             }
 
             gradeStudents.forEach(s => {
                 if (!gradesData[s.id]) gradesData[s.id] = {};
                 if (!gradesData[s.id][subject]) {
-                    gradesData[s.id][subject] = { parts: {}, note: '', locked: false };
+                    gradesData[s.id][subject] = { parts: {}, note: '' };
                 }
                 const subRecord = gradesData[s.id][subject];
                 if (!subRecord.parts) subRecord.parts = {};
-
-                // Check if already locked by teacher or admin rule
-                const isLocked = subRecord.locked;
 
                 let rowHTML = `
                     <tr class="hover:bg-slate-50 transition">
@@ -1269,7 +1261,7 @@
                         <td class="p-3 text-center">
                             <div class="flex items-center justify-center gap-1">
                                 <input type="number" min="0" max="${item.max}" value="${val}" 
-                                    ${isLocked ? 'disabled class="w-16 p-1.5 bg-slate-100 border border-slate-200 rounded-xl text-sm font-bold text-center text-slate-500 cursor-not-allowed"' : 'onchange="updateGradePart(\''+s.id+'\', \''+subject+'\', \''+item.name+'\', '+item.max+', this)" class="w-16 p-1.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-center focus:outline-none focus:border-emerald-600"'} placeholder="0">
+                                    onchange="updateGradePart('${s.id}', '${subject}', '${item.name}', ${item.max}, this)" class="w-16 p-1.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-center focus:outline-none focus:border-emerald-600" placeholder="0">
                                 <span class="text-xs text-slate-400">/${item.max}</span>
                             </div>
                         </td>
@@ -1280,12 +1272,8 @@
                         <td class="p-3 text-center font-mono font-bold text-emerald-700 bg-emerald-50/50" id="totalCell_${s.id}_${subject}">
                             ${totalScore} / 100
                         </td>
-                        <td class="p-3 flex items-center gap-2">
-                            <input type="text" value="${subRecord.note || ''}" 
-                                ${isLocked ? 'disabled class="w-full p-2 bg-slate-100 border border-slate-200 rounded-xl text-sm text-slate-500 cursor-not-allowed"' : 'onchange="updateGradeNote(\''+s.id+'\', \''+subject+'\', this.value)" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-emerald-600"'} placeholder="اكتب ملاحظة أو توجيه...">
-                            <button onclick="toggleTeacherLock('${s.id}', '${subject}')" title="${isLocked ? 'الدرجة مقفلة ولا يمكن التعديل إلا عبر الإدارة' : 'قفل الدرجة اعتماداً نهائياً'}" class="text-xs px-2.5 py-1.5 ${isLocked ? 'bg-amber-100 text-amber-800 font-bold' : 'bg-emerald-600 hover:bg-emerald-700 text-white font-bold'} rounded-lg transition shrink-0">
-                                <i class="fa-solid ${isLocked ? 'fa-lock' : 'fa-check'}"></i> ${isLocked ? 'مقفل (إدارة)' : 'اعتماد وقفل'}
-                            </button>
+                        <td class="p-3">
+                            <input type="text" value="${subRecord.note || ''}" onchange="updateGradeNote('${s.id}', '${subject}', this.value)" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-emerald-600" placeholder="اكتب ملاحظة أو توجيه...">
                         </td>
                     </tr>
                 `;
@@ -1303,18 +1291,11 @@
             }
 
             if (!gradesData[studentId]) gradesData[studentId] = {};
-            if (!gradesData[studentId][subject]) gradesData[studentId][subject] = { parts: {}, note: '', locked: false };
-            
-            if (gradesData[studentId][subject].locked) {
-                showToast('هذه الدرجة مقفلة، التعديل متاح فقط من لوحة الإدارة', 'error');
-                loadTeacherStudentsTable();
-                return;
-            }
+            if (!gradesData[studentId][subject]) gradesData[studentId][subject] = { parts: {}, note: '' };
 
             gradesData[studentId][subject].parts[partName] = val;
             saveToLocalStorage();
 
-            // Recalculate total
             let total = 0;
             const schema = getTeacherSchema(subject);
             schema.forEach(item => {
@@ -1324,82 +1305,203 @@
 
             const totalCell = document.getElementById(`totalCell_${studentId}_${subject}`);
             if (totalCell) totalCell.textContent = `${total} / 100`;
-            showToast('تم حفظ الدرجة مؤقتاً');
+            showToast('تم حفظ الدرجة (التعديل والحذف النهائي من الإدارة)');
         }
 
         function updateGradeNote(studentId, subject, noteVal) {
             if (!gradesData[studentId]) gradesData[studentId] = {};
-            if (!gradesData[studentId][subject]) gradesData[studentId][subject] = { parts: {}, note: '', locked: false };
-            if (gradesData[studentId][subject].locked) {
-                showToast('السجل مقفل، لا يمكن التعديل إلا بواسطة إدارة المدرسة', 'error');
-                loadTeacherStudentsTable();
-                return;
-            }
+            if (!gradesData[studentId][subject]) gradesData[studentId][subject] = { parts: {}, note: '' };
             gradesData[studentId][subject].note = noteVal;
             saveToLocalStorage();
             showToast('تم حفظ الملاحظة');
         }
 
-        function toggleTeacherLock(studentId, subject) {
-            if (!gradesData[studentId]) gradesData[studentId] = {};
-            if (!gradesData[studentId][subject]) gradesData[studentId][subject] = { parts: {}, note: '', locked: false };
-            
-            const record = gradesData[studentId][subject];
-            if (record.locked) {
-                showToast('الدرجة مقفلة ولا يمكن فتحها إلا عبر إدارة المدرسة.', 'error');
-                return;
-            }
+        // Parent Functionality & Complaints
+        function loadParentData() {
+            const studentId = currentSession.studentId;
+            const student = students.find(s => s.id === studentId);
+            if (!student) return;
 
-            if (confirm('هل أنت متأكد من اعتماد وقفل هذه الدرجة نهائياً؟ بعد القفل لن تتمكن من تعديلها إلا من خلال إدارة المدرسة.')) {
-                record.locked = true;
-                saveToLocalStorage();
-                loadTeacherStudentsTable();
-                showToast('تم اعتماد وقفل درجات الطالب بنجاح');
-            }
-        }
+            document.getElementById('parentStudentName').textContent = student.name;
+            document.getElementById('parentStudentRegNo').textContent = `رقم التسجيل: ${student.id}`;
+            document.getElementById('parentStudentGrade').textContent = student.grade;
 
-        function handleLeaderAddStudent(e) {
-            e.preventDefault();
-            const name = document.getElementById('leaderNewStudentName').value.trim();
-            const regNo = document.getElementById('leaderNewStudentRegNo').value.trim();
-            const grade = currentSession.leadClass;
+            const classTeacher = teachers.find(t => t.leadClass === student.grade);
+            document.getElementById('parentClassLeader').textContent = classTeacher ? `${classTeacher.name} (${classTeacher.subject})` : 'غير محدد';
 
-            if (students.some(s => s.id === regNo)) {
-                showToast('رقم التسجيل مستخدم مسبقاً لطالب آخر!', 'error');
-                return;
-            }
-
-            students.push({ id: regNo, name, grade, addedByTeacher: true });
-            saveToLocalStorage();
-            renderLeaderStudentsTable();
-            document.getElementById('leaderNewStudentName').value = '';
-            document.getElementById('leaderNewStudentRegNo').value = '';
-            showToast('تم إضافة الطالب لفصلك بنجاح (التعديل أو الحذف يتم حصراً عبر الإدارة)');
-        }
-
-        function renderLeaderStudentsTable() {
-            const tbody = document.getElementById('leaderStudentsTableBody');
-            if (!tbody) return;
+            const tbody = document.getElementById('parentGradesTableBody');
             tbody.innerHTML = '';
-            const myGrade = currentSession.leadClass;
-            const myStudents = students.filter(s => s.grade === myGrade);
 
-            if (myStudents.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-400">لا يوجد طلاب مسجلين في فصلك بعد</td></tr>`;
-                return;
-            }
+            const studentGrades = gradesData[studentId] || {};
+            
+            teachers.forEach(t => {
+                const subName = t.subject;
+                const subRec = studentGrades[subName];
+                const schema = getTeacherSchema(subName);
 
-            myStudents.forEach(s => {
+                let detailsText = '<span class="text-slate-400">لم تُدخل الدرجات بعد</span>';
+                let totalScore = 0;
+
+                if (subRec && subRec.parts) {
+                    let partsArray = [];
+                    let hasValue = false;
+                    schema.forEach(item => {
+                        const ptVal = subRec.parts[item.name];
+                        if (ptVal !== undefined && ptVal !== '') {
+                            hasValue = true;
+                            totalScore += parseFloat(ptVal) || 0;
+                            partsArray.push(`${item.name}: ${ptVal}/${item.max}`);
+                        }
+                    });
+                    if (hasValue) {
+                        detailsText = `<span class="font-bold text-slate-800">${totalScore}/100</span> <span class="text-xs text-slate-500 block">(${partsArray.join(' - ')})</span>`;
+                    }
+                }
+
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition">
-                        <td class="p-3 font-mono font-bold text-emerald-700">${s.id}</td>
-                        <td class="p-3 font-semibold text-slate-800">${s.name}</td>
-                        <td class="p-3 text-center">
-                            <span class="text-xs text-slate-500 bg-slate-100 px-3 py-1 rounded-lg">مسجل (التعديل والحذف حصراً من الإدارة)</span>
-                        </td>
+                        <td class="p-3 font-bold text-slate-800">${subName}</td>
+                        <td class="p-3 text-slate-600">${t.name}</td>
+                        <td class="p-3">${detailsText}</td>
+                        <td class="p-3 text-slate-600">${subRec && subRec.note ? subRec.note : '<span class="text-slate-400">لا توجد ملاحظات</span>'}</td>
                     </tr>
+                `;
+            });
+
+            renderParentComplaints();
+        }
+
+        function openComplaintModal() {
+            document.getElementById('complaintModal').classList.remove('hidden');
+        }
+
+        function closeComplaintModal() {
+            document.getElementById('complaintModal').classList.add('hidden');
+        }
+
+        function handleSendComplaint(e) {
+            e.preventDefault();
+            const title = document.getElementById('complaintTitle').value.trim();
+            const text = document.getElementById('complaintText').value.trim();
+            const studentId = currentSession.studentId;
+            const student = students.find(s => s.id === studentId);
+            const classTeacher = teachers.find(t => t.leadClass === student.grade);
+
+            if (!classTeacher) {
+                showToast('لا يوجد رائد فصل معين لهذا الصف حالياً لاستقبال الشكوى', 'error');
+                return;
+            }
+
+            const newC = {
+                id: 'c_' + Date.now(),
+                studentId: student.id,
+                studentName: student.name,
+                grade: student.grade,
+                teacherId: classTeacher.id,
+                teacherName: classTeacher.name,
+                title,
+                text,
+                date: new Date().toLocaleDateString('ar-SA'),
+                reply: ''
+            };
+
+            complaints.push(newC);
+            saveToLocalStorage();
+            closeComplaintModal();
+            document.getElementById('complaintTitle').value = '';
+            document.getElementById('complaintText').value = '';
+            renderParentComplaints();
+            showToast('تم إرسال الشكوى لرائد الفصل بنجاح');
+        }
+
+        function renderParentComplaints() {
+            const container = document.getElementById('parentComplaintsList');
+            if (!container) return;
+            container.innerHTML = '';
+            const studentId = currentSession.studentId;
+            const studentComplaints = complaints.filter(c => c.studentId === studentId);
+
+            if (studentComplaints.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 text-center py-2">لا توجد شكاوى مرسلة مسبقاً</p>`;
+                return;
+            }
+
+            studentComplaints.forEach(c => {
+                container.innerHTML += `
+                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-bold text-slate-800 text-sm">${c.title}</h4>
+                            <span class="text-[10px] text-slate-400">${c.date}</span>
+                        </div>
+                        <p class="text-xs text-slate-600">${c.text}</p>
+                        <div class="pt-2 border-t border-slate-200 text-xs">
+                            <span class="font-semibold text-indigo-700">رئسية الفصل الموجه لها (${c.teacherName}):</span>
+                            <p class="text-slate-700 mt-0.5">${c.reply ? c.reply : '<span class="text-amber-600 font-medium">قيد الاطلاع والمتابعة من رائد الفصل...</span>'}</p>
+                        </div>
+                    </div>
                 `;
             });
         }
 
-        function updateGradePart(studentId, subject, partName, maxVal,
+        function updateComplaintBadgeCount() {
+            const countEl = document.getElementById('complaintBadgeCount');
+            if (!countEl) return;
+            const myLeadClass = currentSession.leadClass;
+            const count = complaints.filter(c => c.grade === myLeadClass && !c.reply).length;
+            countEl.textContent = count;
+        }
+
+        function renderTeacherComplaints() {
+            const container = document.getElementById('complaintsListContainer');
+            if (!container) return;
+            container.innerHTML = '';
+            const myLeadClass = currentSession.leadClass;
+            const myComplaints = complaints.filter(c => c.grade === myLeadClass);
+
+            if (myComplaints.length === 0) {
+                container.innerHTML = `<p class="text-sm text-slate-400 text-center py-4">لا توجد شكاوى أو استفسارات من أولياء أمور طلاب فصلك</p>`;
+                return;
+            }
+
+            myComplaints.forEach(c => {
+                container.innerHTML += `
+                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h4 class="font-bold text-slate-800">${c.title}</h4>
+                                <p class="text-xs text-slate-500">الطالب: <strong class="text-slate-700">${c.studentName}</strong> (رقم التسجيل: ${c.studentId})</p>
+                            </div>
+                            <span class="text-xs text-slate-400">${c.date}</span>
+                        </div>
+                        <p class="text-sm text-slate-700 bg-white p-3 rounded-lg border border-slate-100">${c.text}</p>
+                        <div class="space-y-2">
+                            <label class="block text-xs font-semibold text-slate-600">الرد على ولي الأمر:</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="replyInput_${c.id}" value="${c.reply || ''}" placeholder="اكتب ردك هنا..." class="flex-grow p-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-emerald-600">
+                                <button onclick="sendComplaintReply('${c.id}')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow transition">إرسال الرد</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function sendComplaintReply(complaintId) {
+            const replyVal = document.getElementById(`replyInput_${complaintId}`).value.trim();
+            if (!replyVal) {
+                showToast('الرجاء كتابة نص الرد أولاً', 'error');
+                return;
+            }
+
+            const c = complaints.find(item => item.id === complaintId);
+            if (c) {
+                c.reply = replyVal;
+                saveToLocalStorage();
+                renderTeacherComplaints();
+                updateComplaintBadgeCount();
+                showToast('تم إرسال الرد لولي الأمر بنجاح');
+            }
+        }
+    </script>
+</body>
+</html>
