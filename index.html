@@ -157,7 +157,7 @@
                 </div>
             </div>
 
-            <!-- Teachers & Class Leads Management Tab -->
+            <!-- Teacher & Class Leads Management Tab -->
             <div id="adminTeachersPanel" class="hidden space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
@@ -234,6 +234,40 @@
                 </div>
             </div>
 
+            <!-- Admin Grades Management Panel -->
+            <div id="adminGradesMgmtPanel" class="hidden space-y-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
+                    <h3 class="font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-clipboard-check text-indigo-600"></i> إدارة وتعديل درجات الطلاب (خاص بالإدارة)</h3>
+                    <p class="text-xs text-slate-500">يمكنك هنا تعديل أو حذف أي درجات مرسلة من المعلمين، أو مراجعة الدرجات النهائية.</p>
+                    
+                    <div class="flex flex-wrap items-center gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">اختر الصف</label>
+                            <select id="adminMgmtGradeSelect" onchange="loadAdminMgmtTable()" class="p-2 bg-white border border-slate-200 rounded-xl text-sm">
+                                <!-- Populated via JS -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right text-sm">
+                            <thead class="bg-slate-100 text-slate-600 text-xs uppercase">
+                                <tr>
+                                    <th class="p-3 rounded-r-xl">رقم التسجيل</th>
+                                    <th class="p-3">اسم الطالب</th>
+                                    <th class="p-3">الصف</th>
+                                    <th class="p-3">المادة والدرجات المرسلة</th>
+                                    <th class="p-3 rounded-l-xl text-center">الإجراءات (تعديل / حذف الدرجات)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminMgmtTableBody" class="divide-y divide-slate-100">
+                                <!-- Injected via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- School Logo Settings Tab -->
             <div id="adminSettingsPanel" class="hidden space-y-6">
                 <div class="max-w-xl mx-auto bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
@@ -249,18 +283,18 @@
                             <div>
                                 <h4 class="font-bold text-slate-800 text-sm">الشعار الحالي</h4>
                                 <p class="text-xs text-slate-500">سيتم عرضه في أعلى التطبيق بجانب اسم المدرسة</p>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">اختر صورة الشعار من جهازك (رابط الصورة أو ملف)</label>
-                            <input type="file" id="logoFileInput" accept="image/*" onchange="handleLogoUpload(event)" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-600">
-                        </div>
-
-                        <button onclick="removeSchoolLogo()" class="px-4 py-2 bg-red-100 text-red-700 hover:bg-red-200 rounded-xl text-xs font-bold transition">
-                            <i class="fa-solid fa-trash"></i> استعادة الشعار الافتراضي
-                        </button>
-                    </div>
+        <div id="adminDashboard" class="hidden space-y-6 fade-in">
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-wrap justify-between items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">لوحة تحكم إدارة مدارس الأمل الحديثة</h2>
+                    <p class="text-sm text-slate-500">إدارة الفصول، الطلاب، المعلمين، رواد الفصول، الشعار، ودرجات الطلاب</p>
+                </div>
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="switchAdminTab('students')" id="adminTabStudentsBtn" class="px-4 py-2 rounded-xl text-sm font-bold bg-indigo-600 text-white transition">إدارة الطلاب والصفوف</button>
+                    <button onclick="switchAdminTab('teachers')" id="adminTabTeachersBtn" class="px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">إدارة المعلمين</button>
+                    <button onclick="switchAdminTab('grades_config')" id="adminTabGradesConfigBtn" class="px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">إدارة الفصول</button>
+                    <button onclick="switchAdminTab('grades_mgmt')" id="adminTabGradesMgmtBtn" class="px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">إدارة الدرجات المرسلة</button>
+                    <button onclick="switchAdminTab('settings')" id="adminTabSettingsBtn" class="px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">إعدادات الشعار</button>
                 </div>
             </div>
         </div>
@@ -296,9 +330,12 @@
                             <i class="fa-solid fa-circle-info text-emerald-600"></i> مادتك الحالية: (<span id="currentTeacherSubjectSpan" class="font-bold text-slate-700"></span>).
                         </div>
                     </div>
-                    <div>
-                        <button onclick="openGradeSchemaModal()" class="px-4 py-2 bg-emerald-700 text-white rounded-xl text-xs font-bold shadow hover:bg-emerald-800 transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-sliders"></i> تخصيص توزيع درجات المادة (من 100)
+                    <div class="flex items-center gap-2">
+                        <button onclick="openGradeSchemaModal()" class="px-3 py-2 bg-emerald-700 text-white rounded-xl text-xs font-bold shadow hover:bg-emerald-800 transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-sliders"></i> تخصيص بنود المادة
+                        </button>
+                        <button onclick="submitTeacherGrades()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-paper-plane"></i> إرسال الدرجات للمدرسة (مرة واحدة)
                         </button>
                     </div>
                 </div>
@@ -492,6 +529,29 @@
                     <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm shadow">حفظ التعديلات</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Admin Edit Grades Modal -->
+    <div id="adminEditGradeModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl fade-in">
+            <div class="flex justify-between items-center pb-3 border-b border-slate-100">
+                <h3 class="font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-pen-to-square text-indigo-600"></i> تعديل درجات الطالب (إدارة)</h3>
+                <button onclick="closeAdminEditGradeModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <input type="hidden" id="editGradeStudentId">
+            <input type="hidden" id="editGradeSubject">
+            <div id="adminEditGradeFieldsContainer" class="space-y-3">
+                <!-- Injected via JS -->
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">ملاحظة الأستاذ</label>
+                <input type="text" id="adminEditGradeNote" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+            </div>
+            <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                <button type="button" onclick="closeAdminEditGradeModal()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-sm">إلغاء</button>
+                <button type="button" onclick="saveAdminEditedGrades()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm shadow">حفظ التعديلات</button>
+            </div>
         </div>
     </div>
 
@@ -761,14 +821,15 @@
                 document.getElementById('filterGradeSelect'),
                 document.getElementById('newTeacherLeadClass'),
                 document.getElementById('editTeacherLeadClass'),
-                document.getElementById('teacherTargetGrade')
+                document.getElementById('teacherTargetGrade'),
+                document.getElementById('adminMgmtGradeSelect')
             ];
 
             selects.forEach(sel => {
                 if (!sel) return;
                 const currentVal = sel.value;
                 let optionsHTML = '';
-                if (sel.id === 'filterGradeSelect') {
+                if (sel.id === 'filterGradeSelect' || sel.id === 'adminMgmtGradeSelect') {
                     optionsHTML = '<option value="all">كل الصفوف والفصول</option>';
                 } else if (sel.id === 'newTeacherLeadClass' || sel.id === 'editTeacherLeadClass') {
                     optionsHTML = '<option value="">-- ليس رائد فصل --</option>';
@@ -825,19 +886,25 @@
             const studentsBtn = document.getElementById('adminTabStudentsBtn');
             const teachersBtn = document.getElementById('adminTabTeachersBtn');
             const gradesConfigBtn = document.getElementById('adminTabGradesConfigBtn');
+            const gradesMgmtBtn = document.getElementById('adminTabGradesMgmtBtn');
             const settingsBtn = document.getElementById('adminTabSettingsBtn');
+            
             const studentsPanel = document.getElementById('adminStudentsPanel');
             const teachersPanel = document.getElementById('adminTeachersPanel');
             const gradesConfigPanel = document.getElementById('adminGradesConfigPanel');
+            const gradesMgmtPanel = document.getElementById('adminGradesMgmtPanel');
             const settingsPanel = document.getElementById('adminSettingsPanel');
 
             studentsBtn.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition';
             teachersBtn.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition';
             if(gradesConfigBtn) gradesConfigBtn.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition';
+            if(gradesMgmtBtn) gradesMgmtBtn.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition';
             settingsBtn.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition';
+            
             studentsPanel.classList.add('hidden');
             teachersPanel.classList.add('hidden');
             if(gradesConfigPanel) gradesConfigPanel.classList.add('hidden');
+            if(gradesMgmtPanel) gradesMgmtPanel.classList.add('hidden');
             settingsPanel.classList.add('hidden');
 
             if (tab === 'students') {
@@ -852,6 +919,10 @@
                 if(gradesConfigBtn) gradesConfigBtn.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-indigo-600 text-white transition';
                 if(gradesConfigPanel) gradesConfigPanel.classList.remove('hidden');
                 renderAdminGradesList();
+            } else if (tab === 'grades_mgmt') {
+                if(gradesMgmtBtn) gradesMgmtBtn.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-indigo-600 text-white transition';
+                if(gradesMgmtPanel) gradesMgmtPanel.classList.remove('hidden');
+                loadAdminMgmtTable();
             } else if (tab === 'settings') {
                 settingsBtn.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-indigo-600 text-white transition';
                 settingsPanel.classList.remove('hidden');
@@ -1101,7 +1172,7 @@
                 return;
             }
 
-            students.push({ id: regNo, name, grade, addedByTeacher: true });
+            students.push({ id: regNo, name, grade });
             saveToLocalStorage();
             renderLeaderStudentsTable();
             document.getElementById('leaderNewStudentName').value = '';
@@ -1241,10 +1312,11 @@
             gradeStudents.forEach(s => {
                 if (!gradesData[s.id]) gradesData[s.id] = {};
                 if (!gradesData[s.id][subject]) {
-                    gradesData[s.id][subject] = { parts: {}, note: '' };
+                    gradesData[s.id][subject] = { parts: {}, note: '', submitted: false };
                 }
                 const subRecord = gradesData[s.id][subject];
                 if (!subRecord.parts) subRecord.parts = {};
+                const isSubmitted = subRecord.submitted === true;
 
                 let rowHTML = `
                     <tr class="hover:bg-slate-50 transition">
@@ -1260,8 +1332,8 @@
                     rowHTML += `
                         <td class="p-3 text-center">
                             <div class="flex items-center justify-center gap-1">
-                                <input type="number" min="0" max="${item.max}" value="${val}" 
-                                    onchange="updateGradePart('${s.id}', '${subject}', '${item.name}', ${item.max}, this)" class="w-16 p-1.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-center focus:outline-none focus:border-emerald-600" placeholder="0">
+                                <input type="number" min="0" max="${item.max}" value="${val}" ${isSubmitted ? 'disabled' : ''}
+                                    onchange="updateGradePartTemp('${s.id}', '${subject}', '${item.name}', ${item.max}, this)" class="w-16 p-1.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-center focus:outline-none focus:border-emerald-600 ${isSubmitted ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : ''}" placeholder="0">
                                 <span class="text-xs text-slate-400">/${item.max}</span>
                             </div>
                         </td>
@@ -1270,10 +1342,10 @@
 
                 rowHTML += `
                         <td class="p-3 text-center font-mono font-bold text-emerald-700 bg-emerald-50/50" id="totalCell_${s.id}_${subject}">
-                            ${totalScore} / 100
+                            ${totalScore} / 100 ${isSubmitted ? '<br><span class="text-[10px] text-indigo-600">(تم الإرسال ومغلق)</span>' : ''}
                         </td>
                         <td class="p-3">
-                            <input type="text" value="${subRecord.note || ''}" onchange="updateGradeNote('${s.id}', '${subject}', this.value)" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-emerald-600" placeholder="اكتب ملاحظة أو توجيه...">
+                            <input type="text" value="${subRecord.note || ''}" ${isSubmitted ? 'disabled' : ''} onchange="updateGradeNoteTemp('${s.id}', '${subject}', this.value)" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-emerald-600 ${isSubmitted ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : ''}" placeholder="اكتب ملاحظة أو توجيه...">
                         </td>
                     </tr>
                 `;
@@ -1281,7 +1353,7 @@
             });
         }
 
-        function updateGradePart(studentId, subject, partName, maxVal, inputEl) {
+        function updateGradePartTemp(studentId, subject, partName, maxVal, inputEl) {
             let val = parseFloat(inputEl.value);
             if (isNaN(val) || val < 0) val = 0;
             if (val > maxVal) {
@@ -1291,7 +1363,7 @@
             }
 
             if (!gradesData[studentId]) gradesData[studentId] = {};
-            if (!gradesData[studentId][subject]) gradesData[studentId][subject] = { parts: {}, note: '' };
+            if (!gradesData[studentId][subject]) gradesData[studentId][subject] = { parts: {}, note: '', submitted: false };
 
             gradesData[studentId][subject].parts[partName] = val;
             saveToLocalStorage();
@@ -1305,201 +1377,159 @@
 
             const totalCell = document.getElementById(`totalCell_${studentId}_${subject}`);
             if (totalCell) totalCell.textContent = `${total} / 100`;
-            showToast('تم حفظ الدرجة (التعديل والحذف النهائي من الإدارة)');
         }
 
-        function updateGradeNote(studentId, subject, noteVal) {
+        function updateGradeNoteTemp(studentId, subject, noteVal) {
             if (!gradesData[studentId]) gradesData[studentId] = {};
-            if (!gradesData[studentId][subject]) gradesData[studentId][subject] = { parts: {}, note: '' };
+            if (!gradesData[studentId][subject]) gradesData[studentId][subject] = { parts: {}, note: '', submitted: false };
             gradesData[studentId][subject].note = noteVal;
             saveToLocalStorage();
-            showToast('تم حفظ الملاحظة');
         }
 
-        // Parent Functionality & Complaints
-        function loadParentData() {
-            const studentId = currentSession.studentId;
-            const student = students.find(s => s.id === studentId);
-            if (!student) return;
+        function submitTeacherGrades() {
+            const grade = document.getElementById('teacherTargetGrade').value;
+            const subject = currentSession.subject;
+            const gradeStudents = students.filter(s => s.grade === grade);
 
-            document.getElementById('parentStudentName').textContent = student.name;
-            document.getElementById('parentStudentRegNo').textContent = `رقم التسجيل: ${student.id}`;
-            document.getElementById('parentStudentGrade').textContent = student.grade;
+            if (gradeStudents.length === 0) {
+                showToast('لا توجد بيانات طلاب لإرسالها', 'error');
+                return;
+            }
 
-            const classTeacher = teachers.find(t => t.leadClass === student.grade);
-            document.getElementById('parentClassLeader').textContent = classTeacher ? `${classTeacher.name} (${classTeacher.subject})` : 'غير محدد';
+            if (!confirm('هل أنت متأكد من إرسال الدرجات؟ تنبيه: بعد الإرسال لن يمكنك تعديلها أو حذفها وسيتطلب ذلك مراجعة الإدارة.')) {
+                return;
+            }
 
-            const tbody = document.getElementById('parentGradesTableBody');
+            gradeStudents.forEach(s => {
+                if (gradesData[s.id] && gradesData[s.id][subject]) {
+                    gradesData[s.id][subject].submitted = true;
+                }
+            });
+
+            saveToLocalStorage();
+            loadTeacherStudentsTable();
+            showToast('تم إرسال الدرجات بنجاح وقفلها ضد التعديل');
+        }
+
+        // Admin Grades Management Methods
+        function loadAdminMgmtTable() {
+            const tbody = document.getElementById('adminMgmtTableBody');
+            const filterGrade = document.getElementById('adminMgmtGradeSelect').value;
+            if (!tbody) return;
             tbody.innerHTML = '';
 
-            const studentGrades = gradesData[studentId] || {};
-            
-            teachers.forEach(t => {
-                const subName = t.subject;
-                const subRec = studentGrades[subName];
-                const schema = getTeacherSchema(subName);
+            const filteredStudents = filterGrade === 'all' ? students : students.filter(s => s.grade === filterGrade);
 
-                let detailsText = '<span class="text-slate-400">لم تُدخل الدرجات بعد</span>';
-                let totalScore = 0;
+            if (filteredStudents.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">لا توجد بيانات طلاب</td></tr>`;
+                return;
+            }
 
-                if (subRec && subRec.parts) {
-                    let partsArray = [];
-                    let hasValue = false;
-                    schema.forEach(item => {
-                        const ptVal = subRec.parts[item.name];
-                        if (ptVal !== undefined && ptVal !== '') {
-                            hasValue = true;
-                            totalScore += parseFloat(ptVal) || 0;
-                            partsArray.push(`${item.name}: ${ptVal}/${item.max}`);
-                        }
-                    });
-                    if (hasValue) {
-                        detailsText = `<span class="font-bold text-slate-800">${totalScore}/100</span> <span class="text-xs text-slate-500 block">(${partsArray.join(' - ')})</span>`;
+            filteredStudents.forEach(s => {
+                const subRecs = gradesData[s.id] || {};
+                let subjectsHTML = '';
+
+                Object.keys(subRecs).forEach(sub => {
+                    const record = subRecs[sub];
+                    let total = 0;
+                    if (record.parts) {
+                        Object.values(record.parts).forEach(v => total += parseFloat(v) || 0);
                     }
+                    subjectsHTML += `
+                        <div class="mb-2 p-2 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center text-xs">
+                            <div>
+                                <span class="font-bold text-indigo-700">${sub}:</span> المجموع (${total}/100) ${record.submitted ? '<span class="text-emerald-600 font-bold">(مرسلة)</span>' : '<span class="text-amber-600">(مسودة)</span>'}
+                                ${record.note ? `<div class="text-slate-500 italic mt-0.5">ملاحظة: ${record.note}</div>` : ''}
+                            </div>
+                            <div class="space-x-1 space-x-reverse">
+                                <button onclick="openAdminEditGradeModal('${s.id}', '${sub}')" class="px-2 py-1 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200"><i class="fa-solid fa-pen"></i> تعديل</button>
+                                <button onclick="adminDeleteSubjectGrade('${s.id}', '${sub}')" class="px-2 py-1 bg-red-100 text-red-700 rounded-lg hover:bg-red-200"><i class="fa-solid fa-trash"></i> حذف</button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                if (!subjectsHTML) {
+                    subjectsHTML = '<span class="text-slate-400 text-xs">لا توجد درجات مسجلة لهذه المادة</span>';
                 }
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition">
-                        <td class="p-3 font-bold text-slate-800">${subName}</td>
-                        <td class="p-3 text-slate-600">${t.name}</td>
-                        <td class="p-3">${detailsText}</td>
-                        <td class="p-3 text-slate-600">${subRec && subRec.note ? subRec.note : '<span class="text-slate-400">لا توجد ملاحظات</span>'}</td>
+                        <td class="p-3 font-mono font-bold text-slate-600">${s.id}</td>
+                        <td class="p-3 font-semibold text-slate-800">${s.name}</td>
+                        <td class="p-3 text-slate-600">${s.grade}</td>
+                        <td class="p-3">${subjectsHTML}</td>
+                        <td class="p-3 text-center">
+                            <span class="text-xs text-slate-400">تحكم كامل بالإدارة</span>
+                        </td>
                     </tr>
                 `;
             });
-
-            renderParentComplaints();
         }
 
-        function openComplaintModal() {
-            document.getElementById('complaintModal').classList.remove('hidden');
+        function openAdminEditGradeModal(studentId, subject) {
+            document.getElementById('editGradeStudentId').value = studentId;
+            document.getElementById('editGradeSubject').value = subject;
+            
+            const record = gradesData[studentId] && gradesData[studentId][subject] ? gradesData[studentId][subject] : { parts: {}, note: '' };
+            const schema = getTeacherSchema(subject);
+            const container = document.getElementById('adminEditGradeFieldsContainer');
+            container.innerHTML = '';
+
+            schema.forEach(item => {
+                const val = record.parts[item.name] !== undefined ? record.parts[item.name] : '';
+                container.innerHTML += `
+                    <div class="flex items-center justify-between gap-4">
+                        <label class="text-xs font-semibold text-slate-600">${item.name} (من ${item.max}):</label>
+                        <input type="number" min="0" max="${item.max}" value="${val}" class="admin-edit-part-input w-28 p-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-center" data-part="${item.name}" data-max="${item.max}">
+                    </div>
+                `;
+            });
+
+            document.getElementById('adminEditGradeNote').value = record.note || '';
+            document.getElementById('adminEditGradeModal').classList.remove('hidden');
         }
 
-        function closeComplaintModal() {
-            document.getElementById('complaintModal').classList.add('hidden');
+        function closeAdminEditGradeModal() {
+            document.getElementById('adminEditGradeModal').classList.add('hidden');
         }
 
-        function handleSendComplaint(e) {
-            e.preventDefault();
-            const title = document.getElementById('complaintTitle').value.trim();
-            const text = document.getElementById('complaintText').value.trim();
-            const studentId = currentSession.studentId;
-            const student = students.find(s => s.id === studentId);
-            const classTeacher = teachers.find(t => t.leadClass === student.grade);
+        function saveAdminEditedGrades() {
+            const studentId = document.getElementById('editGradeStudentId').value;
+            const subject = document.getElementById('editGradeSubject').value;
+            const note = document.getElementById('adminEditGradeNote').value;
+            const inputs = document.querySelectorAll('.admin-edit-part-input');
 
-            if (!classTeacher) {
-                showToast('لا يوجد رائد فصل معين لهذا الصف حالياً لاستقبال الشكوى', 'error');
-                return;
-            }
+            if (!gradesData[studentId]) gradesData[studentId] = {};
+            if (!gradesData[studentId][subject]) gradesData[studentId][subject] = { parts: {}, note: '', submitted: true };
 
-            const newC = {
-                id: 'c_' + Date.now(),
-                studentId: student.id,
-                studentName: student.name,
-                grade: student.grade,
-                teacherId: classTeacher.id,
-                teacherName: classTeacher.name,
-                title,
-                text,
-                date: new Date().toLocaleDateString('ar-SA'),
-                reply: ''
-            };
+            let newParts = {};
+            inputs.forEach(input => {
+                const partName = input.getAttribute('data-part');
+                const maxVal = parseFloat(input.getAttribute('data-max'));
+                let val = parseFloat(input.value) || 0;
+                if (val > maxVal) val = maxVal;
+                newParts[partName] = val;
+            });
 
-            complaints.push(newC);
+            gradesData[studentId][subject].parts = newParts;
+            gradesData[studentId][subject].note = note;
+            gradesData[studentId][subject].submitted = true;
+
             saveToLocalStorage();
-            closeComplaintModal();
-            document.getElementById('complaintTitle').value = '';
-            document.getElementById('complaintText').value = '';
-            renderParentComplaints();
-            showToast('تم إرسال الشكوى لرائد الفصل بنجاح');
+            closeAdminEditGradeModal();
+            loadAdminMgmtTable();
+            showToast('تم تعديل درجات الطالب بنجاح بواسطة الإدارة');
         }
 
-        function renderParentComplaints() {
-            const container = document.getElementById('parentComplaintsList');
-            if (!container) return;
-            container.innerHTML = '';
-            const studentId = currentSession.studentId;
-            const studentComplaints = complaints.filter(c => c.studentId === studentId);
-
-            if (studentComplaints.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-400 text-center py-2">لا توجد شكاوى مرسلة مسبقاً</p>`;
-                return;
-            }
-
-            studentComplaints.forEach(c => {
-                container.innerHTML += `
-                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-                        <div class="flex justify-between items-center">
-                            <h4 class="font-bold text-slate-800 text-sm">${c.title}</h4>
-                            <span class="text-[10px] text-slate-400">${c.date}</span>
-                        </div>
-                        <p class="text-xs text-slate-600">${c.text}</p>
-                        <div class="pt-2 border-t border-slate-200 text-xs">
-                            <span class="font-semibold text-indigo-700">رئسية الفصل الموجه لها (${c.teacherName}):</span>
-                            <p class="text-slate-700 mt-0.5">${c.reply ? c.reply : '<span class="text-amber-600 font-medium">قيد الاطلاع والمتابعة من رائد الفصل...</span>'}</p>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function updateComplaintBadgeCount() {
-            const countEl = document.getElementById('complaintBadgeCount');
-            if (!countEl) return;
-            const myLeadClass = currentSession.leadClass;
-            const count = complaints.filter(c => c.grade === myLeadClass && !c.reply).length;
-            countEl.textContent = count;
-        }
-
-        function renderTeacherComplaints() {
-            const container = document.getElementById('complaintsListContainer');
-            if (!container) return;
-            container.innerHTML = '';
-            const myLeadClass = currentSession.leadClass;
-            const myComplaints = complaints.filter(c => c.grade === myLeadClass);
-
-            if (myComplaints.length === 0) {
-                container.innerHTML = `<p class="text-sm text-slate-400 text-center py-4">لا توجد شكاوى أو استفسارات من أولياء أمور طلاب فصلك</p>`;
-                return;
-            }
-
-            myComplaints.forEach(c => {
-                container.innerHTML += `
-                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <h4 class="font-bold text-slate-800">${c.title}</h4>
-                                <p class="text-xs text-slate-500">الطالب: <strong class="text-slate-700">${c.studentName}</strong> (رقم التسجيل: ${c.studentId})</p>
-                            </div>
-                            <span class="text-xs text-slate-400">${c.date}</span>
-                        </div>
-                        <p class="text-sm text-slate-700 bg-white p-3 rounded-lg border border-slate-100">${c.text}</p>
-                        <div class="space-y-2">
-                            <label class="block text-xs font-semibold text-slate-600">الرد على ولي الأمر:</label>
-                            <div class="flex gap-2">
-                                <input type="text" id="replyInput_${c.id}" value="${c.reply || ''}" placeholder="اكتب ردك هنا..." class="flex-grow p-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-emerald-600">
-                                <button onclick="sendComplaintReply('${c.id}')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow transition">إرسال الرد</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function sendComplaintReply(complaintId) {
-            const replyVal = document.getElementById(`replyInput_${complaintId}`).value.trim();
-            if (!replyVal) {
-                showToast('الرجاء كتابة نص الرد أولاً', 'error');
-                return;
-            }
-
-            const c = complaints.find(item => item.id === complaintId);
-            if (c) {
-                c.reply = replyVal;
-                saveToLocalStorage();
-                renderTeacherComplaints();
-                updateComplaintBadgeCount();
-                showToast('تم إرسال الرد لولي الأمر بنجاح');
+        function adminDeleteSubjectGrade(studentId, subject) {
+            if (confirm(`هل أنت متأكد من حذف درجات مادة (${subject}) لهذا الطالب؟`)) {
+                if (gradesData[studentId] && gradesData[studentId][subject]) {
+                    delete gradesData[studentId][subject];
+                    saveToLocalStorage();
+                    loadAdminMgmtTable();
+                    showToast('تم حذف درجات المادة بنجاح');
+                }
             }
         }
     </script>
