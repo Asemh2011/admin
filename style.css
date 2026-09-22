@@ -1,0 +1,165 @@
+/* ============================================
+   نظام مدارس الأمل الحديثة - ملف الأنماط
+   ============================================ */
+
+/* الخط الأساسي */
+body {
+    font-family: 'Cairo', sans-serif;
+}
+
+/* تأثير الظهور التدريجي للعناصر */
+.fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* شريط التمرير المخصص (للقوائم الطويلة) */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* تحسين ظهور جداول البيانات */
+table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+/* إخفاء أسهم حقول الأرقام الافتراضية */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+/* تحسين مظهر النصوص الطويلة في بطاقات الشكاوى */
+.complaint-text {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+}
+
+/* تحسين مظهر نموذج الرد على الشكاوى */
+.reply-input-group {
+    display: flex;
+    gap: 0.5rem;
+    align-items: stretch;
+}
+
+/* تأثير النبض لشعارات التنبيه */
+@keyframes pulse-badge {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+.complaint-badge-pulse {
+    animation: pulse-badge 2s ease-in-out infinite;
+}
+
+/* تحسين مظهر الروابط والأزرار */
+button {
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+}
+
+button:active {
+    transform: scale(0.97);
+}
+
+/* منع تحديد النص في الأزرار */
+button {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* تحسين مظهر حقول الإدخال عند التركيز */
+input:focus,
+textarea:focus,
+select:focus {
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* تحسين مظهر البطاقات عند التحويم */
+.hover-lift {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* تحسين استجابة الجداول على الشاشات الصغيرة */
+@media (max-width: 640px) {
+    table {
+        font-size: 0.75rem;
+    }
+    
+    th, td {
+        padding: 0.5rem !important;
+    }
+    
+    .fade-in {
+        animation-duration: 0.2s;
+    }
+}
+
+/* تحسين مظهر النافذة المنبثقة للشكاوى الطويلة */
+.complaint-card {
+    transition: all 0.2s ease-in-out;
+}
+
+.complaint-card:hover {
+    border-color: #a5b4fc;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.08);
+}
+
+/* منع وميض الشاشة عند الخروج */
+body {
+    transition: opacity 0.15s ease-out;
+}
+
+/* تحسين مظهر مربع السبب في الخصم */
+.reduction-reason-display {
+    font-size: 0.7rem;
+    color: #b45309;
+    background: #fef3c7;
+    padding: 2px 6px;
+    border-radius: 6px;
+    display: inline-block;
+    margin-top: 2px;
+    border: 1px solid #fcd34d;
+}
