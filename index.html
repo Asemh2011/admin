@@ -106,6 +106,7 @@
                 <div class="flex gap-2 flex-wrap">
                     <button onclick="switchAdminTab('students')" id="adminTabStudentsBtn" class="px-4 py-2 rounded-xl text-sm font-bold bg-indigo-600 text-white transition">إدارة الطلاب والصفوف</button>
                     <button onclick="switchAdminTab('teachers')" id="adminTabTeachersBtn" class="px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">إدارة المعلمين وحساباتهم</button>
+                    <button onclick="switchAdminTab('grades_config')" id="adminTabGradesConfigBtn" class="px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">إدارة الفصول الدراسية</button>
                     <button onclick="switchAdminTab('settings')" id="adminTabSettingsBtn" class="px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">إعدادات الشعار</button>
                 </div>
             </div>
@@ -127,12 +128,7 @@
                             <div>
                                 <label class="block text-xs font-semibold text-slate-600 mb-1">الصف الدراسي</label>
                                 <select id="newStudentGrade" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-600">
-                                    <option value="الرابع الأساسي">الرابع الأساسي</option>
-                                    <option value="الخامس الأساسي">الخامس الأساسي</option>
-                                    <option value="السادس الأساسي">السادس الأساسي</option>
-                                    <option value="السابع الأساسي">السابع الأساسي</option>
-                                    <option value="الثامن الأساسي">الثامن الأساسي</option>
-                                    <option value="التاسع الأساسي">التاسع الأساسي</option>
+                                    <!-- Populated via JS -->
                                 </select>
                             </div>
                             <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm shadow transition">حفظ وإضافة الطالب</button>
@@ -143,13 +139,7 @@
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-users text-indigo-600"></i> قائمة طلاب المدرسة</h3>
                             <select id="filterGradeSelect" onchange="renderStudentsTable()" class="p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
-                                <option value="all">كل الصفوف (الرابع إلى التاسع)</option>
-                                <option value="الرابع الأساسي">الرابع الأساسي</option>
-                                <option value="الخامس الأساسي">الخامس الأساسي</option>
-                                <option value="السادس الأساسي">السادس الأساسي</option>
-                                <option value="السابع الأساسي">السابع الأساسي</option>
-                                <option value="الثامن الأساسي">الثامن الأساسي</option>
-                                <option value="التاسع الأساسي">التاسع الأساسي</option>
+                                <!-- Populated via JS -->
                             </select>
                         </div>
                         <div class="overflow-x-auto max-h-96">
@@ -187,7 +177,7 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-600 mb-1">كلمة المرور</label>
-                                <input type="password" id="newTeacherPassword" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-emerald-600">
+                                <input type="text" id="newTeacherPassword" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-emerald-600">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-600 mb-1">المادة الدراسية</label>
@@ -197,12 +187,7 @@
                                 <label class="block text-xs font-semibold text-slate-600 mb-1">تعيين رائد فصل (اختياري)</label>
                                 <select id="newTeacherLeadClass" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-emerald-600">
                                     <option value="">-- ليس رائد فصل --</option>
-                                    <option value="الرابع الأساسي">رائد فصل الرابع الأساسي</option>
-                                    <option value="الخامس الأساسي">رائد فصل الخامس الأساسي</option>
-                                    <option value="السادس الأساسي">رائد فصل السادس الأساسي</option>
-                                    <option value="السابع الأساسي">رائد فصل السابع الأساسي</option>
-                                    <option value="الثامن الأساسي">رائد فصل الثامن الأساسي</option>
-                                    <option value="التاسع الأساسي">رائد فصل التاسع الأساسي</option>
+                                    <!-- Populated via JS -->
                                 </select>
                             </div>
                             <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm shadow transition">حفظ المعلم</button>
@@ -225,6 +210,29 @@
                                     <!-- Injected via JS -->
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grades/Classes Configuration Tab -->
+            <div id="adminGradesConfigPanel" class="hidden space-y-6">
+                <div class="max-w-xl mx-auto bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
+                    <h3 class="font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-school-flag text-indigo-600"></i> إضافة صف أو فصل دراسي جديد</h3>
+                    <p class="text-xs text-slate-500">يمكنك إضافة فصول إضافية عند الحاجة (مثل التمهيدي، أو فصول مسائية، أو صفوف إضافية).</p>
+                    
+                    <form onsubmit="handleAddGradeClass(event)" class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">اسم الفصل / الصف الدراسي الجديد</label>
+                            <input type="text" id="newGradeClassName" required placeholder="مثال: الأول الثانوي أو رابع أ..." class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-600">
+                        </div>
+                        <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm shadow transition">إضافة الصف للنظام</button>
+                    </form>
+
+                    <div class="pt-4 border-t border-slate-100">
+                        <h4 class="font-bold text-slate-800 text-sm mb-2">الصفوف والفصول الحالية في المدرسة:</h4>
+                        <div id="adminGradesListContainer" class="flex flex-wrap gap-2">
+                            <!-- Populated via JS -->
                         </div>
                     </div>
                 </div>
@@ -268,13 +276,14 @@
                     <p id="teacherSubtitle" class="text-sm text-slate-500">ادخل درجات مادتك بدقة. لا يمكنك تعديل درجات مواد المعلمين الآخرين.</p>
                 </div>
                 <div id="classLeaderBadge" class="hidden bg-emerald-100 text-emerald-800 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 border border-emerald-200">
-                    <i class="fa-solid fa-award text-sm"></i> <span>أنت أيضاً رائد لهذا الفصل</span>
+                    <i class="fa-solid fa-award text-sm"></i> <span>أنت رائد فصل (<span id="leaderClassSpan"></span>)</span>
                 </div>
             </div>
 
             <!-- Tabs for Teacher -->
-            <div class="flex gap-2">
+            <div class="flex gap-2 flex-wrap">
                 <button onclick="switchTeacherTab('grades')" id="teacherTabGradesBtn" class="px-4 py-2 rounded-xl text-sm font-bold bg-emerald-600 text-white transition"><i class="fa-solid fa-pen-to-square ml-1"></i> إدخال وتعديل درجات مادتك</button>
+                <button onclick="switchTeacherTab('classStudents')" id="teacherTabClassStudentsBtn" class="hidden px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition"><i class="fa-solid fa-user-plus ml-1"></i> إضافة طلاب لفصلي</button>
                 <button onclick="switchTeacherTab('complaints')" id="teacherTabComplaintsBtn" class="hidden px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition"><i class="fa-solid fa-comments ml-1"></i> شكاوى أولياء الأمور <span id="complaintBadgeCount" class="bg-red-500 text-white px-1.5 py-0.5 rounded-full text-xs">0</span></button>
             </div>
 
@@ -284,12 +293,7 @@
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 mb-1">اختر الصف المستهدف</label>
                         <select id="teacherTargetGrade" onchange="loadTeacherStudentsTable()" class="p-2 bg-white border border-slate-200 rounded-xl text-sm">
-                            <option value="الرابع الأساسي">الرابع الأساسي</option>
-                            <option value="الخامس الأساسي">الخامس الأساسي</option>
-                            <option value="السادس الأساسي">السادس الأساسي</option>
-                            <option value="السابع الأساسي">السابع الأساسي</option>
-                            <option value="الثامن الأساسي">الثامن الأساسي</option>
-                            <option value="التاسع الأساسي">التاسع الأساسي</option>
+                            <!-- Populated via JS -->
                         </select>
                     </div>
                     <div class="text-xs text-slate-500">
@@ -312,6 +316,40 @@
                         <!-- Injected via JS -->
                     </tbody>
                 </table>
+            </div>
+        </div>
+
+        <!-- Class Students Addition Panel (For Class Leader) -->
+        <div id="teacherClassStudentsPanel" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-6">
+            <h3 class="font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-user-plus text-emerald-600"></i> إضافة طالب جديد إلى فصلي الدراسي (<span id="leaderClassTitleSpan"></span>)</h3>
+            <form onsubmit="handleLeaderAddStudent(event)" class="max-w-md space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">اسم الطالب الكامل</label>
+                    <input type="text" id="leaderNewStudentName" required class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-emerald-600">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">رقم التسجيل (فريد)</label>
+                    <input type="text" id="leaderNewStudentRegNo" required placeholder="مثال: 2026102" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-emerald-600">
+                </div>
+                <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm shadow transition">إضافة الطالب للفصل</button>
+            </form>
+
+            <div class="mt-4">
+                <h4 class="font-bold text-slate-800 text-sm mb-3">قائمة طلاب فصلي الحاليين:</h4>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right text-sm">
+                        <thead class="bg-slate-100 text-slate-600 text-xs uppercase">
+                            <tr>
+                                <th class="p-3 rounded-r-xl">رقم التسجيل</th>
+                                <th class="p-3">اسم الطالب</th>
+                                <th class="p-3 rounded-l-xl text-center">الإجراء</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderStudentsTableBody" class="divide-y divide-slate-100">
+                            <!-- Injected via JS -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -521,8 +559,18 @@
             { id: 't6', name: 'أستاذ صالح', username: 'saleh', password: '123', subject: 'تربية إسلامية', leadClass: 'التاسع الأساسي' }
         ];
 
+        const defaultGradesClasses = [
+            'الرابع الأساسي',
+            'الخامس الأساسي',
+            'السادس الأساسي',
+            'السابع الأساسي',
+            'الثامن الأساسي',
+            'التاسع الأساسي'
+        ];
+
         const subjectsList = ['رياضيات', 'لغة عربية', 'علوم', 'لغة إنجليزية', 'دراسات اجتماعية', 'تربية إسلامية'];
 
+        let schoolGrades = JSON.parse(localStorage.getItem('amal_school_grades_list')) || defaultGradesClasses;
         let students = JSON.parse(localStorage.getItem('amal_school_students')) || defaultStudents;
         let teachers = JSON.parse(localStorage.getItem('amal_school_teachers')) || defaultTeachers;
         let gradesData = JSON.parse(localStorage.getItem('amal_school_grades')) || {};
@@ -537,38 +585,29 @@
             restoreSession();
         };
 
-        function saveToLocalStorage() {
-            localStorage.setItem('amal_school_students', JSON.stringify(students));
-            localStorage.setItem('amal_school_teachers', JSON.stringify(teachers));
-            localStorage.setItem('amal_school_grades', JSON.stringify(gradesData));
-            localStorage.setItem('amal_school_schemas', JSON.stringify(gradeSchemas));
-            localStorage.setItem('amal_school_complaints', JSON.stringify(complaints));
-            localStorage.setItem('amal_school_logo', schoolLogo);
-            localStorage.setItem('amal_school_session', JSON.stringify(currentSession));
-        }
-
         function applySchoolLogo() {
+            const logoContainer = document.getElementById('schoolLogoContainer');
             const defaultIcon = document.getElementById('defaultLogoIcon');
             const customImg = document.getElementById('customLogoImg');
-            const settingsPreviewIcon = document.getElementById('settingsPreviewIcon');
-            const settingsPreviewImg = document.getElementById('settingsPreviewImg');
+            const settingsIcon = document.getElementById('settingsPreviewIcon');
+            const settingsImg = document.getElementById('settingsPreviewImg');
 
             if (schoolLogo) {
-                if(defaultIcon) defaultIcon.classList.add('hidden');
-                if(customImg) {
+                if (defaultIcon) defaultIcon.classList.add('hidden');
+                if (customImg) {
                     customImg.src = schoolLogo;
                     customImg.classList.remove('hidden');
                 }
-                if(settingsPreviewIcon) settingsPreviewIcon.classList.add('hidden');
-                if(settingsPreviewImg) {
-                    settingsPreviewImg.src = schoolLogo;
-                    settingsPreviewImg.classList.remove('hidden');
+                if (settingsIcon) settingsIcon.classList.add('hidden');
+                if (settingsImg) {
+                    settingsImg.src = schoolLogo;
+                    settingsImg.classList.remove('hidden');
                 }
             } else {
-                if(defaultIcon) defaultIcon.classList.remove('hidden');
-                if(customImg) customImg.classList.add('hidden');
-                if(settingsPreviewIcon) settingsPreviewIcon.classList.remove('hidden');
-                if(settingsPreviewImg) settingsPreviewImg.classList.add('hidden');
+                if (defaultIcon) defaultIcon.classList.remove('hidden');
+                if (customImg) customImg.classList.add('hidden');
+                if (settingsIcon) settingsIcon.classList.remove('hidden');
+                if (settingsImg) settingsImg.classList.add('hidden');
             }
         }
 
@@ -589,68 +628,75 @@
             schoolLogo = '';
             saveToLocalStorage();
             applySchoolLogo();
-            document.getElementById('logoFileInput').value = '';
-            showToast('تمت العودة للشعار الافتراضي');
+            showToast('تمت استعادة الشعار الافتراضي');
         }
 
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
-            const msg = document.getElementById('toastMessage');
-            const icon = document.getElementById('toastIcon');
-            msg.textContent = message;
-            icon.className = type === 'success' ? 'fa-solid fa-check-circle text-emerald-400 text-lg' : 'fa-solid fa-triangle-exclamation text-amber-400 text-lg';
+            const msgEl = document.getElementById('toastMessage');
+            const iconEl = document.getElementById('toastIcon');
+            
+            msgEl.textContent = message;
+            if (type === 'error') {
+                iconEl.className = 'fa-solid fa-circle-exclamation text-red-400 text-lg';
+                toast.className = 'fixed bottom-6 left-6 z-50 bg-red-900 text-white px-4 py-3 rounded-xl shadow-2xl text-sm flex items-center gap-3 fade-in';
+            } else {
+                iconEl.className = 'fa-solid fa-check-circle text-emerald-400 text-lg';
+                toast.className = 'fixed bottom-6 left-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl text-sm flex items-center gap-3 fade-in';
+            }
+
             toast.classList.remove('hidden');
-            setTimeout(() => { toast.classList.add('hidden'); }, 3000);
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
         }
 
         function showLoginModal(role) {
+            document.getElementById('loginView').classList.add('hidden');
             const authSection = document.getElementById('authFormSection');
-            const loginView = document.getElementById('loginView');
-            const authTitle = document.getElementById('authTitle');
-            const authContent = document.getElementById('authFormContent');
-
-            loginView.classList.add('hidden');
             authSection.classList.remove('hidden');
+            const titleEl = document.getElementById('authTitle');
+            const contentEl = document.getElementById('authFormContent');
 
             if (role === 'admin') {
-                authTitle.textContent = 'تسجيل دخول إدارة مدارس الأمل';
-                authContent.innerHTML = `
-                    <form onsubmit="handleAdminLogin(event)" class="space-y-4">
+                titleEl.textContent = 'تسجيل دخول إدارة المدرسة';
+                contentEl.innerHTML = `
+                    <form onsubmit="handleLogin(event, 'admin')" class="space-y-4">
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">اسم المستخدم</label>
-                            <input type="text" id="adminUser" required placeholder="أدخل اسم المستخدم" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-600">
+                            <input type="text" id="loginUsername" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-600">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">كلمة المرور</label>
-                            <input type="password" id="adminPass" required placeholder="أدخل كلمة المرور" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-600">
+                            <input type="password" id="loginPassword" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-600">
                         </div>
-                        <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm shadow transition">دخول لوحة الإدارة</button>
+                        <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm shadow transition">دخول الإدارة</button>
                     </form>
                 `;
             } else if (role === 'teacher') {
-                authTitle.textContent = 'تسجيل دخول المعلم / رائد الفصل';
-                authContent.innerHTML = `
-                    <form onsubmit="handleTeacherLogin(event)" class="space-y-4">
+                titleEl.textContent = 'تسجيل دخول المعلمين / رواد الفصول';
+                contentEl.innerHTML = `
+                    <form onsubmit="handleLogin(event, 'teacher')" class="space-y-4">
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">اسم المستخدم للمعلم</label>
-                            <input type="text" id="teacherUsername" required placeholder="أدخل اسم المستخدم" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-emerald-600">
+                            <input type="text" id="loginUsername" required placeholder="مثال: khaled" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-emerald-600">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">كلمة المرور</label>
-                            <input type="password" id="teacherPassword" required placeholder="أدخل كلمة المرور" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-emerald-600">
+                            <input type="password" id="loginPassword" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-emerald-600">
                         </div>
-                        <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm shadow transition">دخول لوحة المعلم</button>
+                        <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm shadow transition">دخول المعلم</button>
                     </form>
                 `;
             } else if (role === 'parent') {
-                authTitle.textContent = 'بوابة ولي الأمر (الاستعلام برقم التسجيل)';
-                authContent.innerHTML = `
-                    <form onsubmit="handleParentLogin(event)" class="space-y-4">
+                titleEl.textContent = 'بوابة أولياء الأمور (استعلام برقم التسجيل)';
+                contentEl.innerHTML = `
+                    <form onsubmit="handleLogin(event, 'parent')" class="space-y-4">
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">رقم تسجيل الطالب</label>
-                            <input type="text" id="parentRegInput" required placeholder="مثال: 2026401" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-amber-600">
+                            <input type="text" id="parentRegNo" required placeholder="مثال: 2026401" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-amber-600">
                         </div>
-                        <button type="submit" class="w-full py-3 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-sm shadow transition">عرض درجات ابني</button>
+                        <button type="submit" class="w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-sm shadow transition">استعلام وعرض الدرجات</button>
                     </form>
                 `;
             }
@@ -661,64 +707,91 @@
             document.getElementById('loginView').classList.remove('hidden');
         }
 
-        function handleAdminLogin(e) {
+        function handleLogin(e, role) {
             e.preventDefault();
-            const user = document.getElementById('adminUser').value.trim();
-            const pass = document.getElementById('adminPass').value;
-            if (user === 'admin' && pass === 'admin123321') {
-                currentSession = { role: 'admin', name: 'مدير مدارس الأمل' };
-                saveToLocalStorage();
-                restoreSession();
-                showToast('مرحباً بك في لوحة الإدارة');
-            } else {
-                showToast('اسم المستخدم أو كلمة المرور غير صحيحة', 'error');
-            }
-        }
-
-        function handleTeacherLogin(e) {
-            e.preventDefault();
-            const username = document.getElementById('teacherUsername').value.trim();
-            const password = document.getElementById('teacherPassword').value;
-            
-            const teacher = teachers.find(t => t.username === username && t.password === password);
-            if (teacher) {
-                currentSession = { role: 'teacher', teacherId: teacher.id, name: teacher.name, subject: teacher.subject, leadClass: teacher.leadClass };
-                saveToLocalStorage();
-                restoreSession();
-                showToast(`أهلاً بك أستاذ ${teacher.name}`);
-            } else {
-                showToast('اسم المستخدم أو كلمة المرور غير صحيحة', 'error');
-            }
-        }
-
-        function handleParentLogin(e) {
-            e.preventDefault();
-            const regNo = document.getElementById('parentRegInput').value.trim();
-            const student = students.find(s => s.id === regNo);
-            if (student) {
-                currentSession = { role: 'parent', studentId: student.id, name: `ولي أمر الطالب (${student.name})` };
-                saveToLocalStorage();
-                restoreSession();
-                showToast(`تم العثور على ملف الطالب: ${student.name}`);
-            } else {
-                showToast('رقم التسجيل غير موجود، تأكد من الرقم المدخل', 'error');
+            if (role === 'admin') {
+                const u = document.getElementById('loginUsername').value.trim();
+                const p = document.getElementById('loginPassword').value;
+                if (u === 'admin' && p === 'admin123321') {
+                    currentSession = { role: 'admin', name: 'مدير النظام' };
+                    saveToLocalStorage();
+                    restoreSession();
+                    showToast('مرحباً بك يا مدير النظام');
+                } else {
+                    showToast('اسم المستخدم أو كلمة المرور للإدارة غير صحيحة', 'error');
+                }
+            } else if (role === 'teacher') {
+                const u = document.getElementById('loginUsername').value.trim();
+                const p = document.getElementById('loginPassword').value;
+                const teacher = teachers.find(t => t.username === u && t.password === p);
+                if (teacher) {
+                    currentSession = { role: 'teacher', id: teacher.id, name: teacher.name, subject: teacher.subject, leadClass: teacher.leadClass };
+                    saveToLocalStorage();
+                    restoreSession();
+                    showToast(`أهلاً بك يا أستاذ ${teacher.name}`);
+                } else {
+                    showToast('بيانات الدخول غير صحيحة، تأكد من اسم المستخدم وكلمة المرور', 'error');
+                }
+            } else if (role === 'parent') {
+                const regNo = document.getElementById('parentRegNo').value.trim();
+                const student = students.find(s => s.id === regNo);
+                if (student) {
+                    currentSession = { role: 'parent', studentId: student.id, name: `ولي أمر الطالب: ${student.name}` };
+                    saveToLocalStorage();
+                    restoreSession();
+                    showToast(`تم العثور على طالب: ${student.name}`);
+                } else {
+                    showToast('رقم التسجيل غير متوفر في سجلات المدرسة', 'error');
+                }
             }
         }
 
         function logout() {
             currentSession = null;
-            saveToLocalStorage();
-            document.getElementById('adminDashboard').classList.add('hidden');
-            document.getElementById('teacherDashboard').classList.add('hidden');
-            document.getElementById('parentDashboard').classList.add('hidden');
-            document.getElementById('userInfoHeader').classList.add('hidden');
-            document.getElementById('loginView').classList.remove('hidden');
-            document.getElementById('authFormSection').classList.add('hidden');
-            showToast('تم تسجيل الخروج بنجاح');
+            localStorage.removeItem('amal_school_session');
+            window.location.reload();
         }
 
         function parentLogout() {
             logout();
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('amal_school_grades_list', JSON.stringify(schoolGrades));
+            localStorage.setItem('amal_school_students', JSON.stringify(students));
+            localStorage.setItem('amal_school_teachers', JSON.stringify(teachers));
+            localStorage.setItem('amal_school_grades', JSON.stringify(gradesData));
+            localStorage.setItem('amal_school_schemas', JSON.stringify(gradeSchemas));
+            localStorage.setItem('amal_school_complaints', JSON.stringify(complaints));
+            localStorage.setItem('amal_school_logo', schoolLogo);
+            localStorage.setItem('amal_school_session', JSON.stringify(currentSession));
+        }
+
+        function populateGradesDropdowns() {
+            const selects = [
+                document.getElementById('newStudentGrade'),
+                document.getElementById('filterGradeSelect'),
+                document.getElementById('newTeacherLeadClass'),
+                document.getElementById('editTeacherLeadClass'),
+                document.getElementById('teacherTargetGrade')
+            ];
+
+            selects.forEach(sel => {
+                if (!sel) return;
+                const currentVal = sel.value;
+                let optionsHTML = '';
+                if (sel.id === 'filterGradeSelect') {
+                    optionsHTML = '<option value="all">كل الصفوف والفصول</option>';
+                } else if (sel.id === 'newTeacherLeadClass' || sel.id === 'editTeacherLeadClass') {
+                    optionsHTML = '<option value="">-- ليس رائد فصل --</option>';
+                }
+                
+                schoolGrades.forEach(g => {
+                    optionsHTML += `<option value="${g}">${g}</option>`;
+                });
+                sel.innerHTML = optionsHTML;
+                if (currentVal) sel.value = currentVal;
+            });
         }
 
         function restoreSession() {
@@ -727,24 +800,30 @@
             document.getElementById('authFormSection').classList.add('hidden');
             document.getElementById('userInfoHeader').classList.remove('hidden');
             document.getElementById('userNameDisplay').textContent = currentSession.name;
+            populateGradesDropdowns();
 
             if (currentSession.role === 'admin') {
                 document.getElementById('adminDashboard').classList.remove('hidden');
                 renderStudentsTable();
                 renderTeachersTable();
+                renderAdminGradesList();
             } else if (currentSession.role === 'teacher') {
                 document.getElementById('teacherDashboard').classList.remove('hidden');
                 document.getElementById('teacherWelcomeTitle').textContent = `لوحة تحكم الأستاذ: ${currentSession.name}`;
                 document.getElementById('currentTeacherSubjectSpan').textContent = currentSession.subject;
-                document.getElementById('teacherTargetGrade').value = currentSession.leadClass || 'الرابع الأساسي';
+                document.getElementById('teacherTargetGrade').value = currentSession.leadClass || schoolGrades[0];
                 
                 if (currentSession.leadClass) {
                     document.getElementById('classLeaderBadge').classList.remove('hidden');
+                    document.getElementById('leaderClassSpan').textContent = currentSession.leadClass;
+                    document.getElementById('leaderClassTitleSpan').textContent = currentSession.leadClass;
                     document.getElementById('teacherTabComplaintsBtn').classList.remove('hidden');
+                    document.getElementById('teacherTabClassStudentsBtn').classList.remove('hidden');
                     updateComplaintBadgeCount();
                 } else {
                     document.getElementById('classLeaderBadge').classList.add('hidden');
                     document.getElementById('teacherTabComplaintsBtn').classList.add('hidden');
+                    document.getElementById('teacherTabClassStudentsBtn').classList.add('hidden');
                 }
                 loadTeacherStudentsTable();
             } else if (currentSession.role === 'parent') {
@@ -757,16 +836,20 @@
         function switchAdminTab(tab) {
             const studentsBtn = document.getElementById('adminTabStudentsBtn');
             const teachersBtn = document.getElementById('adminTabTeachersBtn');
+            const gradesConfigBtn = document.getElementById('adminTabGradesConfigBtn');
             const settingsBtn = document.getElementById('adminTabSettingsBtn');
             const studentsPanel = document.getElementById('adminStudentsPanel');
             const teachersPanel = document.getElementById('adminTeachersPanel');
+            const gradesConfigPanel = document.getElementById('adminGradesConfigPanel');
             const settingsPanel = document.getElementById('adminSettingsPanel');
 
             studentsBtn.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition';
             teachersBtn.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition';
+            if(gradesConfigBtn) gradesConfigBtn.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition';
             settingsBtn.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition';
             studentsPanel.classList.add('hidden');
             teachersPanel.classList.add('hidden');
+            if(gradesConfigPanel) gradesConfigPanel.classList.add('hidden');
             settingsPanel.classList.add('hidden');
 
             if (tab === 'students') {
@@ -777,6 +860,10 @@
                 teachersBtn.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-emerald-600 text-white transition';
                 teachersPanel.classList.remove('hidden');
                 renderTeachersTable();
+            } else if (tab === 'grades_config') {
+                if(gradesConfigBtn) gradesConfigBtn.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-indigo-600 text-white transition';
+                if(gradesConfigPanel) gradesConfigPanel.classList.remove('hidden');
+                renderAdminGradesList();
             } else if (tab === 'settings') {
                 settingsBtn.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-indigo-600 text-white transition';
                 settingsPanel.classList.remove('hidden');
@@ -785,42 +872,43 @@
 
         function handleAddStudent(e) {
             e.preventDefault();
-            const name = document.getElementById('newStudentName').value;
-            const regNo = document.getElementById('newStudentRegNo').value.trim();
+            const name = document.getElementById('newStudentName').value.trim();
+            const id = document.getElementById('newStudentRegNo').value.trim();
             const grade = document.getElementById('newStudentGrade').value;
 
-            if (students.some(s => s.id === regNo)) {
+            if (students.some(s => s.id === id)) {
                 showToast('رقم التسجيل مستخدم مسبقاً لطالب آخر!', 'error');
                 return;
             }
 
-            students.push({ id: regNo, name, grade });
+            students.push({ id, name, grade });
             saveToLocalStorage();
             renderStudentsTable();
-            document.getElementById('addStudentForm').reset();
+            document.getElementById('newStudentName').value = '';
+            document.getElementById('newStudentRegNo').value = '';
             showToast('تم إضافة الطالب بنجاح');
         }
 
         function renderStudentsTable() {
             const tbody = document.getElementById('adminStudentsTableBody');
-            const filter = document.getElementById('filterGradeSelect').value;
+            const filterGrade = document.getElementById('filterGradeSelect').value;
             tbody.innerHTML = '';
 
-            const filtered = filter === 'all' ? students : students.filter(s => s.grade === filter);
+            const filtered = filterGrade === 'all' ? students : students.filter(s => s.grade === filterGrade);
 
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">لا توجد بيانات طلاب مطابقة</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">لا يوجد طلاب مسجلين</td></tr>`;
                 return;
             }
 
             filtered.forEach(s => {
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition">
-                        <td class="p-3 font-mono font-bold text-indigo-600">${s.id}</td>
+                        <td class="p-3 font-mono font-bold text-indigo-700">${s.id}</td>
                         <td class="p-3 font-semibold text-slate-800">${s.name}</td>
-                        <td class="p-3"><span class="bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-lg text-xs font-semibold">${s.grade}</span></td>
+                        <td class="p-3 text-slate-600">${s.grade}</td>
                         <td class="p-3 text-center">
-                            <button onclick="deleteStudent('${s.id}')" class="text-red-500 hover:text-red-700 px-2 py-1 rounded-lg text-xs transition"><i class="fa-solid fa-trash"></i> حذف</button>
+                            <button onclick="deleteStudent('${s.id}')" class="text-red-500 hover:text-red-700 px-2.5 py-1 rounded-lg text-xs font-semibold transition"><i class="fa-solid fa-trash"></i> حذف</button>
                         </td>
                     </tr>
                 `;
@@ -838,47 +926,87 @@
 
         function handleAddTeacher(e) {
             e.preventDefault();
-            const name = document.getElementById('newTeacherName').value;
+            const name = document.getElementById('newTeacherName').value.trim();
             const username = document.getElementById('newTeacherUsername').value.trim();
             const password = document.getElementById('newTeacherPassword').value;
-            const subject = document.getElementById('newTeacherSubject').value;
+            const subject = document.getElementById('newTeacherSubject').value.trim();
             const leadClass = document.getElementById('newTeacherLeadClass').value;
 
             if (teachers.some(t => t.username === username)) {
-                showToast('اسم المستخدم هذا محجوز لمعلم آخر، اختر اسماً فريداً!', 'error');
+                showToast('اسم المستخدم مستخدم مسبقاً لمعلم آخر!', 'error');
                 return;
             }
 
-            const newId = 't_' + Date.now();
-            teachers.push({ id: newId, name, username, password, subject, leadClass });
+            const newT = {
+                id: 't_' + Date.now(),
+                name,
+                username,
+                password,
+                subject,
+                leadClass
+            };
+
+            teachers.push(newT);
             saveToLocalStorage();
             renderTeachersTable();
             document.getElementById('addTeacherForm').reset();
-            showToast('تم إضافة المعلم بنجاح');
+            showToast('تم إضافة المعلم وحسابه بنجاح');
         }
 
         function renderTeachersTable() {
             const tbody = document.getElementById('adminTeachersTableBody');
             tbody.innerHTML = '';
 
+            if (teachers.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">لا يوجد معلمين مسجلين</td></tr>`;
+                return;
+            }
+
             teachers.forEach(t => {
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition">
                         <td class="p-3">
-                            <div class="font-semibold text-slate-800">${t.name}</div>
-                            <span class="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded text-xs">${t.subject}</span>
+                            <div class="font-bold text-slate-800">${t.name}</div>
+                            <div class="text-xs text-emerald-600">مادة: ${t.subject}</div>
                         </td>
-                        <td class="p-3 font-mono text-xs text-slate-600">
-                            <div>اسم المستخدم: <strong class="text-indigo-600">${t.username}</strong></div>
+                        <td class="p-3 font-mono text-xs">
+                            <div>اسم المستخدم: <strong class="text-slate-700">${t.username}</strong></div>
                             <div>كلمة المرور: <strong class="text-slate-700">${t.password}</strong></div>
                         </td>
-                        <td class="p-3">${t.leadClass ? '<span class="bg-amber-50 text-amber-700 px-2.5 py-1 rounded-lg text-xs font-bold"><i class="fa-solid fa-crown ml-1"></i> ' + t.leadClass + '</span>' : '<span class="text-slate-400 text-xs">معلم مادة فقط</span>'}</td>
+                        <td class="p-3 text-xs">
+                            ${t.leadClass ? `<span class="bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-lg font-bold">${t.leadClass}</span>` : '<span class="text-slate-400">لا يوجد</span>'}
+                        </td>
                         <td class="p-3 text-center space-x-1 space-x-reverse">
-                            <button onclick="openEditTeacherModal('${t.id}')" class="text-indigo-600 hover:text-indigo-800 px-2 py-1 rounded-lg text-xs transition"><i class="fa-solid fa-pen-to-square"></i> تعديل</button>
-                            <button onclick="deleteTeacher('${t.id}')" class="text-red-500 hover:text-red-700 px-2 py-1 rounded-lg text-xs transition"><i class="fa-solid fa-trash"></i> حذف</button>
+                            <button onclick="openEditTeacherModal('${t.id}')" class="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-2.5 py-1 rounded-lg text-xs font-semibold transition"><i class="fa-solid fa-pen"></i> تعديل</button>
+                            <button onclick="deleteTeacher('${t.id}')" class="bg-red-50 text-red-600 hover:bg-red-100 px-2.5 py-1 rounded-lg text-xs font-semibold transition"><i class="fa-solid fa-trash"></i> حذف</button>
                         </td>
                     </tr>
                 `;
+            });
+        }
+
+        function handleAddGradeClass(e) {
+            e.preventDefault();
+            const className = document.getElementById('newGradeClassName').value.trim();
+            if (!className) return;
+            if (schoolGrades.includes(className)) {
+                showToast('هذا الفصل موجود مسبقاً!', 'error');
+                return;
+            }
+            schoolGrades.push(className);
+            saveToLocalStorage();
+            populateGradesDropdowns();
+            renderAdminGradesList();
+            document.getElementById('newGradeClassName').value = '';
+            showToast('تم إضافة الفصل الجديد بنجاح');
+        }
+
+        function renderAdminGradesList() {
+            const container = document.getElementById('adminGradesListContainer');
+            if (!container) return;
+            container.innerHTML = '';
+            schoolGrades.forEach(g => {
+                container.innerHTML += `<span class="bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-xl text-xs font-bold border border-indigo-100">${g}</span>`;
             });
         }
 
@@ -938,29 +1066,89 @@
         // Teacher Functionality
         function switchTeacherTab(tab) {
             const gradesBtn = document.getElementById('teacherTabGradesBtn');
+            const classStudentsBtn = document.getElementById('teacherTabClassStudentsBtn');
             const complaintsBtn = document.getElementById('teacherTabComplaintsBtn');
             const gradesPanel = document.getElementById('teacherGradesPanel');
+            const classStudentsPanel = document.getElementById('teacherClassStudentsPanel');
             const complaintsPanel = document.getElementById('teacherComplaintsPanel');
+
+            gradesBtn.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition';
+            if(classStudentsBtn) classStudentsBtn.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition';
+            if(complaintsBtn) complaintsBtn.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition';
+            gradesPanel.classList.add('hidden');
+            if(classStudentsPanel) classStudentsPanel.classList.add('hidden');
+            if(complaintsPanel) complaintsPanel.classList.add('hidden');
 
             if (tab === 'grades') {
                 gradesBtn.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-emerald-600 text-white transition';
-                complaintsBtn.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition';
                 gradesPanel.classList.remove('hidden');
-                complaintsPanel.classList.add('hidden');
                 loadTeacherStudentsTable();
-            } else {
-                complaintsBtn.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-emerald-600 text-white transition';
-                gradesBtn.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition';
-                complaintsPanel.classList.remove('hidden');
-                gradesPanel.classList.add('hidden');
+            } else if (tab === 'classStudents') {
+                if(classStudentsBtn) classStudentsBtn.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-emerald-600 text-white transition';
+                if(classStudentsPanel) classStudentsPanel.classList.remove('hidden');
+                renderLeaderStudentsTable();
+            } else if (tab === 'complaints') {
+                if(complaintsBtn) complaintsBtn.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-emerald-600 text-white transition';
+                if(complaintsPanel) complaintsPanel.classList.remove('hidden');
                 renderTeacherComplaints();
             }
         }
 
-        // Get default schema for teacher's subject if not customized
+        function handleLeaderAddStudent(e) {
+            e.preventDefault();
+            const name = document.getElementById('leaderNewStudentName').value.trim();
+            const regNo = document.getElementById('leaderNewStudentRegNo').value.trim();
+            const grade = currentSession.leadClass;
+
+            if (students.some(s => s.id === regNo)) {
+                showToast('رقم التسجيل مستخدم مسبقاً لطالب آخر!', 'error');
+                return;
+            }
+
+            students.push({ id: regNo, name, grade });
+            saveToLocalStorage();
+            renderLeaderStudentsTable();
+            document.getElementById('leaderNewStudentName').value = '';
+            document.getElementById('leaderNewStudentRegNo').value = '';
+            showToast('تم إضافة الطالب إلى فصلك بنجاح');
+        }
+
+        function renderLeaderStudentsTable() {
+            const tbody = document.getElementById('leaderStudentsTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            const myGrade = currentSession.leadClass;
+            const myStudents = students.filter(s => s.grade === myGrade);
+
+            if (myStudents.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-400">لا يوجد طلاب مسجلين في فصلك بعد</td></tr>`;
+                return;
+            }
+
+            myStudents.forEach(s => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-3 font-mono font-bold text-emerald-700">${s.id}</td>
+                        <td class="p-3 font-semibold text-slate-800">${s.name}</td>
+                        <td class="p-3 text-center">
+                            <button onclick="deleteStudentByLeader('${s.id}')" class="text-red-500 hover:text-red-700 px-2 py-1 rounded-lg text-xs transition"><i class="fa-solid fa-trash"></i> حذف</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function deleteStudentByLeader(id) {
+            if (confirm('هل أنت متأكد من حذف هذا الطالب من الفصل؟')) {
+                students = students.filter(s => s.id !== id);
+                saveToLocalStorage();
+                renderLeaderStudentsTable();
+                showToast('تم حذف الطالب بنجاح');
+            }
+        }
+
         function getTeacherSchema(subject) {
             if (gradeSchemas[subject]) return gradeSchemas[subject];
-            // Default schema: Attendance 20, Monthly 40, Behavior 20, Participation 20 = 100
             return [
                 { name: 'حضور وغياب', max: 20 },
                 { name: 'اختبار شهري', max: 40 },
@@ -1037,7 +1225,6 @@
             const subject = currentSession.subject;
             const schema = getTeacherSchema(subject);
 
-            // Render table header dynamically based on schema
             const thead = document.getElementById('teacherGradesTableHead');
             let headerHTML = `
                 <tr>
@@ -1131,7 +1318,6 @@
 
             gradesData[studentId][subject].parts[partName] = val;
             
-            // Calculate new total
             const schema = getTeacherSchema(subject);
             let newTotal = 0;
             schema.forEach(item => {
@@ -1139,10 +1325,9 @@
                 if (pVal !== '' && pVal !== undefined) newTotal += parseFloat(pVal) || 0;
             });
 
-            gradesData[studentId][subject].score = newTotal; // Keep compatibility
+            gradesData[studentId][subject].score = newTotal;
             saveToLocalStorage();
 
-            // Update total cell in DOM
             const totalCell = document.getElementById(`totalCell_${studentId}_${subject}`);
             if (totalCell) totalCell.textContent = `${newTotal} / 100`;
 
