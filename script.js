@@ -1,6 +1,7 @@
 /* =========================================================
    نظام مدارس الأمل الحديثة - الملف البرمجي الرئيسي
    جميع الحقوق محفوظة © 2026
+   VERSION: 2.3 - نافذة سبب الخصم بناءً على الفرق عن الدرجة القصوى
    ========================================================= */
 
 'use strict';
@@ -32,14 +33,9 @@ const defaultGradesClasses = [
     'السابع الأساسي', 'الثامن الأساسي', 'التاسع الأساسي'
 ];
 
-// قائمة المواد الافتراضية
 const defaultSubjects = [
-    'رياضيات',
-    'لغة عربية',
-    'علوم',
-    'لغة إنجليزية',
-    'دراسات اجتماعية',
-    'تربية إسلامية'
+    'رياضيات', 'لغة عربية', 'علوم', 'لغة إنجليزية',
+    'دراسات اجتماعية', 'تربية إسلامية'
 ];
 
 // ========================================================
@@ -66,8 +62,8 @@ let schoolLogo = '';
 try { schoolLogo = localStorage.getItem('amal_school_logo') || ''; } catch (e) {}
 let currentSession = loadFromStorage('amal_school_session', null);
 
-// حماية ضد الدخول المتكرر السريع
 let isLoggingIn = false;
+let _pendingReduction = null;
 
 function saveToLocalStorage() {
     try {
@@ -144,7 +140,203 @@ window.removeSchoolLogo = function () {
 };
 
 // ========================================================
-// 4. نظام تسجيل الدخول (مع إصلاحات)
+// 4. نافذة سبب الخصم
+// ========================================================
+window.openReductionReasonModal = function (studentId, subject, partName, maxVal, oldVal, newVal, inputEl, existingReason, studentName) {
+    console.log('🔵 openReductionReasonModal:', studentId, partName, 'max:', maxVal, '→', newVal);
+
+    const old = document.getElementById('reductionReasonModal');
+    if (old && old.parentNode) old.parentNode.removeChild(old);
+
+    _pendingReduction = {
+        studentId: studentId,
+        subject: subject,
+        partName: partName,
+        maxVal: maxVal,
+        oldVal: oldVal,
+        newVal: newVal,
+        inputEl: inputEl
+    };
+
+    const modal = document.createElement('div');
+    modal.id = 'reductionReasonModal';
+    modal.style.cssText = [
+        'position:fixed',
+        'top:0',
+        'left:0',
+        'right:0',
+        'bottom:0',
+        'width:100vw',
+        'height:100vh',
+        'margin:0',
+        'padding:20px',
+        'background:rgba(15,23,42,0.85)',
+        'z-index:2147483647',
+        'display:flex',
+        'align-items:center',
+        'justify-content:center',
+        'box-sizing:border-box',
+        'font-family:Cairo,sans-serif',
+        'direction:rtl',
+        'overflow-y:auto'
+    ].join(';');
+
+    modal.innerHTML =
+        '<div style="background:#ffffff;border-radius:16px;max-width:480px;width:100%;padding:24px;box-shadow:0 25px 60px rgba(0,0,0,0.4);font-family:Cairo,sans-serif;direction:rtl;max-height:90vh;overflow-y:auto;box-sizing:border-box;">' +
+
+            '<div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:14px;border-bottom:1px solid #e2e8f0;margin-bottom:16px;">' +
+                '<h3 style="font-weight:700;color:#1e293b;display:flex;align-items:center;gap:8px;font-size:17px;margin:0;font-family:Cairo,sans-serif;">' +
+                    '<span style="color:#d97706;font-size:20px;">⚠</span> سبب خصم الدرجة' +
+                '</h3>' +
+                '<button type="button" onclick="cancelReductionReason()" style="background:none;border:none;cursor:pointer;color:#94a3b8;font-size:22px;padding:4px;line-height:1;font-family:Arial,sans-serif;">✕</button>' +
+            '</div>' +
+
+            '<div style="background:#fffbeb;border:1px solid #fde68a;color:#92400e;padding:12px;border-radius:12px;font-size:12px;line-height:1.7;margin-bottom:14px;font-family:Cairo,sans-serif;">' +
+                '<b>تنبيه مهم:</b><br>' +
+                'أنت على وشك إعطاء الطالب درجة أقل من <b>الدرجة القصوى</b> بـ <b>أكثر من 3 درجات</b>.<br>' +
+                'يجب كتابة سبب الخصم، <b>ولن تُحفظ الدرجة إلا بعد كتابة السبب والضغط على حفظ</b>.<br>' +
+                'سيظهر السبب لولي الأمر والإدارة.' +
+            '</div>' +
+
+            '<div id="reductionReasonInfo" style="font-size:12px;font-weight:600;color:#334155;background:#f8fafc;padding:12px;border-radius:10px;border:1px solid #e2e8f0;margin-bottom:14px;line-height:1.9;font-family:Cairo,sans-serif;">' +
+                '👤 الطالب: <b>' + (studentName || studentId) + '</b><br>' +
+                '📌 البند: <b>' + partName + '</b><br>' +
+                '🎯 الدرجة القصوى: <b>' + maxVal + '</b><br>' +
+                '📉 الدرجة المُدخلة: <b style="color:#dc2626;">' + newVal + '</b> (خصم <b style="color:#dc2626;">' + (maxVal - newVal) + '</b> درجات)' +
+            '</div>' +
+
+            '<label style="display:block;font-size:12px;font-weight:600;color:#475569;margin-bottom:6px;font-family:Cairo,sans-serif;">' +
+                'سبب الخصم <span style="color:#dc2626;">*</span>' +
+            '</label>' +
+
+            '<textarea id="reductionReasonInput" rows="3" placeholder="مثال: عدم تسليم الواجب، سلوك غير لائق، إهمال متكرر..." ' +
+                'style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:12px;font-family:Cairo,sans-serif;font-size:14px;resize:vertical;box-sizing:border-box;min-height:90px;display:block;color:#1e293b;outline:none;">' +
+                (existingReason || '') +
+            '</textarea>' +
+
+            '<div id="reductionReasonError" style="color:#dc2626;font-size:12px;font-weight:700;margin-top:6px;display:none;font-family:Cairo,sans-serif;">⚠ يجب كتابة سبب الخصم قبل الحفظ</div>' +
+
+            '<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px;padding-top:16px;border-top:1px solid #e2e8f0;flex-wrap:wrap;">' +
+                '<button type="button" onclick="cancelReductionReason()" ' +
+                    'style="padding:10px 20px;border-radius:12px;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:Cairo,sans-serif;background:#f1f5f9;color:#475569;">' +
+                    'إلغاء' +
+                '</button>' +
+                '<button type="button" onclick="confirmReductionReason()" ' +
+                    'style="padding:10px 20px;border-radius:12px;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:Cairo,sans-serif;background:#d97706;color:#ffffff;box-shadow:0 4px 12px rgba(217,119,6,0.35);">' +
+                    '💾 حفظ الدرجة مع السبب' +
+                '</button>' +
+            '</div>' +
+
+        '</div>';
+
+    document.body.appendChild(modal);
+    modal.style.display = 'flex';
+    modal.style.visibility = 'visible';
+    modal.style.opacity = '1';
+
+    console.log('✅ النافذة أُضيفت - display:', window.getComputedStyle(modal).display, '| z-index:', window.getComputedStyle(modal).zIndex);
+
+    setTimeout(function () {
+        const inp = document.getElementById('reductionReasonInput');
+        if (inp) inp.focus();
+    }, 150);
+};
+
+window.confirmReductionReason = function () {
+    if (!_pendingReduction) { console.warn('لا يوجد خصم معلق'); return; }
+    const reasonInput = document.getElementById('reductionReasonInput');
+    const errEl = document.getElementById('reductionReasonError');
+    const reason = reasonInput ? reasonInput.value.trim() : '';
+    if (!reason) {
+        if (errEl) errEl.style.display = 'block';
+        if (reasonInput) reasonInput.focus();
+        return;
+    }
+    if (errEl) errEl.style.display = 'none';
+    applyReductionReason(reason);
+};
+
+window.cancelReductionReason = function () {
+    if (_pendingReduction && _pendingReduction.inputEl) {
+        const prev = _pendingReduction.inputEl.getAttribute('data-prev-val');
+        _pendingReduction.inputEl.value = (prev !== null && prev !== '') ? prev : '';
+    }
+    _pendingReduction = null;
+    const modal = document.getElementById('reductionReasonModal');
+    if (modal && modal.parentNode) modal.parentNode.removeChild(modal);
+    console.log('🔵 تم إلغاء الخصم');
+};
+
+function applyReductionReason(reason) {
+    if (!_pendingReduction) return;
+    const p = _pendingReduction;
+
+    if (!gradesData[p.studentId]) gradesData[p.studentId] = {};
+    if (!gradesData[p.studentId][p.subject]) gradesData[p.studentId][p.subject] = { parts: {}, note: '', reductionReasons: {}, submitted: false };
+    const record = gradesData[p.studentId][p.subject];
+    if (!record.parts) record.parts = {};
+    if (!record.reductionReasons) record.reductionReasons = {};
+
+    if (record.note) {
+        const oldMarker = 'سبب خصم بند "' + p.partName + '"';
+        record.note = record.note.split(' | ').filter(function (s) {
+            return s.indexOf(oldMarker) === -1;
+        }).join(' | ');
+    }
+
+    record.reductionReasons[p.partName] = reason;
+    record.parts[p.partName] = p.newVal;
+
+    const noteAdd = 'سبب خصم بند "' + p.partName + '": ' + reason;
+    record.note = record.note ? (record.note + ' | ' + noteAdd) : noteAdd;
+
+    const noteInput = document.querySelector('[data-grade-note="' + p.studentId + '_' + p.subject + '"]');
+    if (noteInput) noteInput.value = record.note;
+
+    saveToLocalStorage();
+    updateTeacherTotalAndReason(p.studentId, p.subject, p.partName, p.inputEl);
+
+    _pendingReduction = null;
+    const modal = document.getElementById('reductionReasonModal');
+    if (modal && modal.parentNode) modal.parentNode.removeChild(modal);
+    showToast('تم حفظ الدرجة مع سبب الخصم');
+    console.log('✅ تم تطبيق سبب الخصم');
+}
+
+function updateTeacherTotalAndReason(studentId, subject, partName, inputEl) {
+    const record = gradesData[studentId] && gradesData[studentId][subject];
+    if (!record) return;
+    let total = 0;
+    const schema = getTeacherSchema(subject);
+    schema.forEach(function (item) {
+        const v = record.parts[item.name];
+        if (v !== undefined && v !== '') total += parseFloat(v) || 0;
+    });
+    const totalCell = document.getElementById('totalCell_' + studentId + '_' + subject);
+    if (totalCell) totalCell.textContent = total + ' / 100';
+
+    if (inputEl) {
+        const cell = inputEl.closest('td');
+        if (cell) {
+            let reasonEl = cell.querySelector('.reduction-reason-display');
+            const reason = record.reductionReasons && record.reductionReasons[partName];
+            if (reason) {
+                if (!reasonEl) {
+                    reasonEl = document.createElement('div');
+                    reasonEl.className = 'reduction-reason-display';
+                    reasonEl.style.cssText = 'font-size:10px;color:#b45309;background:#fef3c7;padding:3px 6px;border-radius:6px;display:block;margin-top:4px;border:1px solid #fcd34d;text-align:right;line-height:1.4;';
+                    cell.appendChild(reasonEl);
+                }
+                reasonEl.textContent = 'سبب الخصم: ' + reason;
+            } else if (reasonEl) {
+                reasonEl.remove();
+            }
+        }
+    }
+}
+
+// ========================================================
+// 5. نظام تسجيل الدخول
 // ========================================================
 window.showLoginModal = function (role) {
     document.getElementById('loginView').classList.add('hidden');
@@ -190,9 +382,8 @@ window.backToLoginChoice = function () {
 
 window.handleLogin = function (e, role) {
     e.preventDefault();
-    if (isLoggingIn) return; // منع النقر المتكرر
+    if (isLoggingIn) return;
 
-    // ✅ تحقق صريح من الحقول
     if (role === 'parent') {
         const regEl = document.getElementById('parentRegNo');
         if (!regEl || !regEl.value || !regEl.value.trim()) {
@@ -253,30 +444,25 @@ window.handleLogin = function (e, role) {
     setTimeout(function () { isLoggingIn = false; }, 800);
 };
 
-// ✅ logout فوري بدون إعادة تحميل الصفحة
 window.logout = function () {
     try {
         currentSession = null;
         localStorage.removeItem('amal_school_session');
     } catch (e) { /* ignore */ }
 
-    // إخفاء جميع اللوحات مباشرة
     ['adminDashboard', 'teacherDashboard', 'parentDashboard', 'userInfoHeader', 'authFormSection'].forEach(function (id) {
         const el = document.getElementById(id);
         if (el) el.classList.add('hidden');
     });
 
-    // إظهار صفحة الدخول
     const loginView = document.getElementById('loginView');
     if (loginView) loginView.classList.remove('hidden');
 
-    // تنظيف أي بيانات مدخلة
     const contentEl = document.getElementById('authFormContent');
     if (contentEl) contentEl.innerHTML = '';
     document.querySelectorAll('input:not([type="file"])').forEach(function (inp) { inp.value = ''; });
     document.querySelectorAll('select').forEach(function (sel) { sel.selectedIndex = 0; });
 
-    // مسح عنوان المستخدم في الأعلى
     const nameEl = document.getElementById('userNameDisplay');
     if (nameEl) nameEl.textContent = '';
 
@@ -286,7 +472,7 @@ window.logout = function () {
 window.parentLogout = function () { window.logout(); };
 
 // ========================================================
-// 5. القوائم المنسدلة والجلسات
+// 6. القوائم والجلسات
 // ========================================================
 function populateGradesDropdowns() {
     const selects = [
@@ -310,7 +496,6 @@ function populateGradesDropdowns() {
     });
 }
 
-// ✅ تعبئة قوائم المواد من قائمة subjects
 function populateSubjectDropdowns() {
     const selects = [
         document.getElementById('newTeacherSubject'),
@@ -373,12 +558,10 @@ function restoreSession() {
 }
 
 // ========================================================
-// 6. لوحة الإدارة - التنقل بين التبويبات
+// 7. لوحة الإدارة - التنقل
 // ========================================================
 window.switchAdminTab = function (tab) {
-    // دمج التبويب الديناميكي ضمن القائمة
     setupAdminGradesTab();
-
     const map = {
         students:      { btn: 'adminTabStudentsBtn',         panel: 'adminStudentsPanel',         active: 'bg-indigo-600' },
         teachers:      { btn: 'adminTabTeachersBtn',         panel: 'adminTeachersPanel',         active: 'bg-emerald-600' },
@@ -389,21 +572,18 @@ window.switchAdminTab = function (tab) {
         settings:      { btn: 'adminTabSettingsBtn',         panel: 'adminSettingsPanel',         active: 'bg-indigo-600' },
         student_grades:{ btn: 'adminTabStudentGradesBtn',    panel: 'adminStudentGradesPanel',    active: 'bg-emerald-600' }
     };
-
     Object.keys(map).forEach(function (key) {
         const btn = document.getElementById(map[key].btn);
         const panel = document.getElementById(map[key].panel);
         if (btn) btn.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition';
         if (panel) panel.classList.add('hidden');
     });
-
     if (map[tab]) {
         const btn = document.getElementById(map[tab].btn);
         const panel = document.getElementById(map[tab].panel);
         if (btn) btn.className = 'px-4 py-2 rounded-xl text-sm font-bold ' + map[tab].active + ' text-white transition';
         if (panel) panel.classList.remove('hidden');
     }
-
     if (tab === 'students') renderStudentsTable();
     else if (tab === 'teachers') renderTeachersTable();
     else if (tab === 'grades_config') renderAdminGradesList();
@@ -414,7 +594,7 @@ window.switchAdminTab = function (tab) {
 };
 
 // ========================================================
-// 7. إدارة الطلاب
+// 8. إدارة الطلاب
 // ========================================================
 window.handleAddStudent = function (e) {
     e.preventDefault();
@@ -422,8 +602,7 @@ window.handleAddStudent = function (e) {
     const id = document.getElementById('newStudentRegNo').value.trim();
     const grade = document.getElementById('newStudentGrade').value;
     if (students.some(function (s) { return s.id === id; })) {
-        showToast('رقم التسجيل مستخدم مسبقاً!', 'error');
-        return;
+        showToast('رقم التسجيل مستخدم مسبقاً!', 'error'); return;
     }
     students.push({ id: id, name: name, grade: grade });
     saveToLocalStorage();
@@ -439,7 +618,7 @@ function renderStudentsTable() {
     tbody.innerHTML = '';
     const filtered = filterGrade === 'all' ? students : students.filter(function (s) { return s.grade === filterGrade; });
     if (filtered.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">لا يوجد طلاب مسجلين</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">لا يوجد طلاب</td></tr>';
         return;
     }
     filtered.forEach(function (s) {
@@ -452,16 +631,16 @@ function renderStudentsTable() {
 }
 
 window.deleteStudent = function (id) {
-    if (confirm('هل أنت متأكد من حذف هذا الطالب نهائياً؟')) {
+    if (confirm('حذف هذا الطالب نهائياً؟')) {
         students = students.filter(function (s) { return s.id !== id; });
         saveToLocalStorage();
         renderStudentsTable();
-        showToast('تم حذف الطالب بنجاح');
+        showToast('تم الحذف');
     }
 };
 
 // ========================================================
-// 8. إدارة المعلمين
+// 9. إدارة المعلمين
 // ========================================================
 window.handleAddTeacher = function (e) {
     e.preventDefault();
@@ -470,24 +649,23 @@ window.handleAddTeacher = function (e) {
     const password = document.getElementById('newTeacherPassword').value;
     const subject = document.getElementById('newTeacherSubject').value;
     const leadClass = document.getElementById('newTeacherLeadClass').value;
-    if (!subject) { showToast('اختر مادة المعلم', 'error'); return; }
+    if (!subject) { showToast('اختر المادة', 'error'); return; }
     if (teachers.some(function (t) { return t.username === username; })) {
-        showToast('اسم المستخدم مستخدم مسبقاً!', 'error');
-        return;
+        showToast('اسم المستخدم مستخدم مسبقاً!', 'error'); return;
     }
     teachers.push({ id: 't_' + Date.now(), name: name, username: username, password: password, subject: subject, leadClass: leadClass });
     saveToLocalStorage();
     renderTeachersTable();
     document.getElementById('addTeacherForm').reset();
     populateSubjectDropdowns();
-    showToast('تم إضافة المعلم بنجاح');
+    showToast('تم إضافة المعلم');
 };
 
 function renderTeachersTable() {
     const tbody = document.getElementById('adminTeachersTableBody');
     tbody.innerHTML = '';
     if (teachers.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">لا يوجد معلمين مسجلين</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">لا يوجد معلمين</td></tr>';
         return;
     }
     teachers.forEach(function (t) {
@@ -511,14 +689,11 @@ window.openEditTeacherModal = function (id) {
     document.getElementById('editTeacherName').value = t.name;
     document.getElementById('editTeacherUsername').value = t.username;
     document.getElementById('editTeacherPassword').value = t.password;
-
-    // Subject select
     const subSel = document.getElementById('editTeacherSubject');
     let subOpts = '<option value="">-- اختر المادة --</option>';
     subjects.forEach(function (s) { subOpts += '<option value="' + s + '">' + s + '</option>'; });
     subSel.innerHTML = subOpts;
     subSel.value = t.subject;
-
     const sel = document.getElementById('editTeacherLeadClass');
     let opts = '<option value="">-- ليس رائد فصل --</option>';
     schoolGrades.forEach(function (g) { opts += '<option value="' + g + '">' + g + '</option>'; });
@@ -540,8 +715,7 @@ window.handleUpdateTeacher = function (e) {
     const subject = document.getElementById('editTeacherSubject').value;
     const leadClass = document.getElementById('editTeacherLeadClass').value;
     if (teachers.some(function (t) { return t.username === username && t.id !== id; })) {
-        showToast('اسم المستخدم مستخدم من قبل معلم آخر!', 'error');
-        return;
+        showToast('اسم المستخدم مستخدم!', 'error'); return;
     }
     const t = teachers.find(function (item) { return item.id === id; });
     if (t) {
@@ -550,36 +724,33 @@ window.handleUpdateTeacher = function (e) {
         saveToLocalStorage();
         renderTeachersTable();
         closeEditTeacherModal();
-        showToast('تم تحديث المعلم بنجاح');
+        showToast('تم التحديث');
     }
 };
 
 window.deleteTeacher = function (id) {
-    if (confirm('هل أنت متأكد من حذف هذا المعلم؟')) {
+    if (confirm('حذف هذا المعلم؟')) {
         teachers = teachers.filter(function (t) { return t.id !== id; });
         saveToLocalStorage();
         renderTeachersTable();
-        showToast('تم حذف المعلم بنجاح');
+        showToast('تم الحذف');
     }
 };
 
 // ========================================================
-// 9. إدارة الفصول
+// 10. إدارة الفصول
 // ========================================================
 window.handleAddGradeClass = function (e) {
     e.preventDefault();
     const className = document.getElementById('newGradeClassName').value.trim();
     if (!className) return;
-    if (schoolGrades.indexOf(className) !== -1) {
-        showToast('هذا الفصل موجود مسبقاً!', 'error');
-        return;
-    }
+    if (schoolGrades.indexOf(className) !== -1) { showToast('موجود مسبقاً!', 'error'); return; }
     schoolGrades.push(className);
     saveToLocalStorage();
     populateGradesDropdowns();
     renderAdminGradesList();
     document.getElementById('newGradeClassName').value = '';
-    showToast('تم إضافة الفصل بنجاح');
+    showToast('تم إضافة الفصل');
 };
 
 function renderAdminGradesList() {
@@ -587,7 +758,7 @@ function renderAdminGradesList() {
     if (!container) return;
     container.innerHTML = '';
     if (schoolGrades.length === 0) {
-        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-2">لا توجد فصول مسجلة</p>';
+        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-2">لا توجد فصول</p>';
         return;
     }
     schoolGrades.forEach(function (g) {
@@ -624,10 +795,7 @@ window.handleUpdateGradeClass = function (e) {
     const newName = document.getElementById('editGradeClassNewName').value.trim();
     if (!newName) return;
     if (oldName === newName) { closeEditGradeClassModal(); return; }
-    if (schoolGrades.indexOf(newName) !== -1) {
-        showToast('يوجد فصل بنفس الاسم!', 'error');
-        return;
-    }
+    if (schoolGrades.indexOf(newName) !== -1) { showToast('يوجد فصل بنفس الاسم!', 'error'); return; }
     const idx = schoolGrades.indexOf(oldName);
     if (idx !== -1) schoolGrades[idx] = newName;
     students.forEach(function (s) { if (s.grade === oldName) s.grade = newName; });
@@ -642,40 +810,37 @@ window.handleUpdateGradeClass = function (e) {
     renderStudentsTable();
     renderTeachersTable();
     closeEditGradeClassModal();
-    showToast('تم تعديل اسم الفصل بنجاح');
+    showToast('تم التعديل');
 };
 
 window.deleteGradeClass = function (className) {
     const cnt = students.filter(function (s) { return s.grade === className; }).length;
     const msg = cnt > 0
-        ? 'يوجد ' + cnt + ' طالب في هذا الفصل. سيتم حذف الفصل فقط دون الطلاب. متابعة؟'
-        : 'هل أنت متأكد من حذف هذا الفصل؟';
+        ? 'يوجد ' + cnt + ' طالب. سيتم حذف الفصل فقط. متابعة؟'
+        : 'حذف هذا الفصل؟';
     if (!confirm(msg)) return;
     schoolGrades = schoolGrades.filter(function (g) { return g !== className; });
     saveToLocalStorage();
     populateGradesDropdowns();
     renderAdminGradesList();
-    showToast('تم حذف الفصل بنجاح');
+    showToast('تم الحذف');
 };
 
 // ========================================================
-// 10. ✅ إدارة المواد الدراسية (جديد)
+// 11. إدارة المواد
 // ========================================================
 window.handleAddSubject = function (e) {
     e.preventDefault();
     const name = document.getElementById('newSubjectName').value.trim();
     if (!name) return;
-    if (subjects.indexOf(name) !== -1) {
-        showToast('هذه المادة موجودة مسبقاً!', 'error');
-        return;
-    }
+    if (subjects.indexOf(name) !== -1) { showToast('موجودة مسبقاً!', 'error'); return; }
     subjects.push(name);
     saveToLocalStorage();
     renderAdminSubjectsList();
     populateSubjectDropdowns();
     populateAdminSchemaSubjects();
     document.getElementById('newSubjectName').value = '';
-    showToast('تم إضافة المادة بنجاح');
+    showToast('تم إضافة المادة');
 };
 
 function renderAdminSubjectsList() {
@@ -683,7 +848,7 @@ function renderAdminSubjectsList() {
     if (!container) return;
     container.innerHTML = '';
     if (subjects.length === 0) {
-        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-2">لا توجد مواد مسجلة</p>';
+        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-2">لا توجد مواد</p>';
         return;
     }
     subjects.forEach(function (s) {
@@ -720,28 +885,20 @@ window.handleUpdateSubject = function (e) {
     const newName = document.getElementById('editSubjectNewName').value.trim();
     if (!newName) return;
     if (oldName === newName) { closeEditSubjectModal(); return; }
-    if (subjects.indexOf(newName) !== -1) {
-        showToast('توجد مادة أخرى بنفس الاسم!', 'error');
-        return;
-    }
-    // Update subjects list
+    if (subjects.indexOf(newName) !== -1) { showToast('توجد مادة بنفس الاسم!', 'error'); return; }
     const idx = subjects.indexOf(oldName);
     if (idx !== -1) subjects[idx] = newName;
-    // Update teachers
     teachers.forEach(function (t) { if (t.subject === oldName) t.subject = newName; });
-    // Update schemas key
     if (gradeSchemas[oldName]) {
         gradeSchemas[newName] = gradeSchemas[oldName];
         delete gradeSchemas[oldName];
     }
-    // Update gradesData: keys inside each student's record
     Object.keys(gradesData).forEach(function (sid) {
         if (gradesData[sid][oldName]) {
             gradesData[sid][newName] = gradesData[sid][oldName];
             delete gradesData[sid][oldName];
         }
     });
-    // Update current session if teacher
     if (currentSession && currentSession.role === 'teacher' && currentSession.subject === oldName) {
         currentSession.subject = newName;
     }
@@ -751,27 +908,26 @@ window.handleUpdateSubject = function (e) {
     populateAdminSchemaSubjects();
     renderTeachersTable();
     closeEditSubjectModal();
-    showToast('تم تعديل المادة بنجاح');
+    showToast('تم التعديل');
 };
 
 window.deleteSubject = function (name) {
     const usedBy = teachers.filter(function (t) { return t.subject === name; }).length;
     if (usedBy > 0) {
-        showToast('لا يمكن حذف المادة، يوجد ' + usedBy + ' معلم مرتبط بها. غيّر مادتهم أولاً.', 'error');
-        return;
+        showToast('لا يمكن الحذف، يوجد ' + usedBy + ' معلم مرتبط', 'error'); return;
     }
-    if (!confirm('هل أنت متأكد من حذف مادة "' + name + '"؟')) return;
+    if (!confirm('حذف مادة "' + name + '"؟')) return;
     subjects = subjects.filter(function (s) { return s !== name; });
     if (gradeSchemas[name]) delete gradeSchemas[name];
     saveToLocalStorage();
     renderAdminSubjectsList();
     populateSubjectDropdowns();
     populateAdminSchemaSubjects();
-    showToast('تم حذف المادة بنجاح');
+    showToast('تم الحذف');
 };
 
 // ========================================================
-// 11. توزيع الدرجات (Admin)
+// 12. توزيع الدرجات (Admin)
 // ========================================================
 function populateAdminSchemaSubjects() {
     const sel = document.getElementById('adminSchemaSubjectSelect');
@@ -819,7 +975,7 @@ window.addAdminSchemaItemRow = function () {
 
 window.saveAdminGradeSchema = function () {
     const subject = document.getElementById('adminSchemaSubjectSelect').value;
-    if (!subject) { showToast('اختر المادة أولاً', 'error'); return; }
+    if (!subject) { showToast('اختر المادة', 'error'); return; }
     const rows = document.querySelectorAll('#schemaAdminItemsContainer .schema-row');
     let newSchema = []; let totalMax = 0;
     rows.forEach(function (row) {
@@ -829,22 +985,21 @@ window.saveAdminGradeSchema = function () {
     });
     const warningEl = document.getElementById('adminSchemaTotalWarning');
     if (totalMax !== 100) {
-        warningEl.textContent = 'خطأ: المجموع يجب أن يكون 100 تماماً (الحالي: ' + totalMax + ')';
+        warningEl.textContent = 'المجموع يجب أن يكون 100 (الحالي: ' + totalMax + ')';
         warningEl.classList.remove('hidden'); return;
     }
     warningEl.classList.add('hidden');
     gradeSchemas[subject] = newSchema;
     saveToLocalStorage();
-    showToast('تم حفظ توزيع درجات مادة ' + subject);
+    showToast('تم الحفظ');
 };
 
 // ========================================================
-// 12. إدارة درجات الطلاب (Admin) - التبويب الديناميكي
+// 13. إدارة درجات الطلاب (Admin)
 // ========================================================
 function setupAdminGradesTab() {
     if (document.getElementById('adminTabStudentGradesBtn')) return;
     const tabsContainer = document.getElementById('adminTabStudentsBtn').parentElement;
-
     const newBtn = document.createElement('button');
     newBtn.id = 'adminTabStudentGradesBtn';
     newBtn.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition';
@@ -859,7 +1014,7 @@ function setupAdminGradesTab() {
     newPanel.innerHTML =
         '<div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">' +
             '<div><h3 class="font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-table-list text-indigo-600"></i> إدارة درجات الطلاب</h3>' +
-            '<p class="text-xs text-slate-500">اطّلع على جميع الدرجات المُرسلة من المعلمين، مع إمكانية التعديل أو الحذف.</p></div>' +
+            '<p class="text-xs text-slate-500">اطّلع على الدرجات المُرسلة من المعلمين مع إمكانية التعديل أو الحذف.</p></div>' +
             '<div class="flex flex-wrap items-center gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">' +
                 '<div><label class="block text-xs font-semibold text-slate-600 mb-1">اختر المادة/المعلم</label>' +
                 '<select id="adminGradesSubjectSelect" onchange="loadAdminStudentGradesTable()" class="p-2 bg-white border border-slate-200 rounded-xl text-sm"></select></div>' +
@@ -897,7 +1052,6 @@ window.loadAdminStudentGradesTable = function () {
     const thead = document.getElementById('adminStudentGradesTableHead');
     const tbody = document.getElementById('adminStudentGradesTableBody');
     thead.innerHTML = ''; tbody.innerHTML = '';
-
     if (!teacherId || !grade) {
         tbody.innerHTML = '<tr><td class="p-4 text-center text-slate-400">اختر المادة والصف</td></tr>';
         return;
@@ -924,32 +1078,25 @@ window.loadAdminStudentGradesTable = function () {
         const rec = (gradesData[s.id] && gradesData[s.id][subject]) || { parts: {}, note: '', submitted: false };
         if (!rec.parts) rec.parts = {};
         if (!rec.reductionReasons) rec.reductionReasons = {};
-
         let rowHTML = '<tr class="hover:bg-slate-50 transition">' +
             '<td class="p-3 font-mono font-bold text-slate-600">' + s.id + '</td>' +
             '<td class="p-3 font-semibold text-slate-800">' + s.name + '</td>';
-
         let total = 0;
         schema.forEach(function (item) {
             const val = rec.parts[item.name] !== undefined ? rec.parts[item.name] : '';
             if (val !== '') total += parseFloat(val) || 0;
             const reason = rec.reductionReasons[item.name];
-            const reasonHTML = reason
-                ? '<div class="reduction-reason-display mt-1 text-right">سبب الخصم: ' + reason + '</div>'
-                : '';
+            const reasonHTML = reason ? '<div style="font-size:10px;color:#b45309;background:#fef3c7;padding:3px 6px;border-radius:6px;display:block;margin-top:4px;border:1px solid #fcd34d;text-align:right;line-height:1.4;">سبب الخصم: ' + reason + '</div>' : '';
             rowHTML += '<td class="p-3 text-center">' +
                 '<input type="number" min="0" max="' + item.max + '" value="' + val + '" ' +
                 'onchange="adminUpdateGradePart(\'' + s.id + '\',\'' + subject + '\',\'' + item.name.replace(/'/g, "\\'") + '\',' + item.max + ',this)" ' +
                 'class="w-16 p-1.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-center focus:outline-none focus:border-indigo-600" placeholder="0">' +
-                reasonHTML +
-            '</td>';
+                reasonHTML + '</td>';
         });
-
         rowHTML += '<td class="p-3 text-center font-mono font-bold text-indigo-700 bg-indigo-50/50" id="adminTotalCell_' + s.id + '_' + subject + '">' + total + ' / 100</td>' +
             '<td class="p-3"><input type="text" value="' + (rec.note || '') + '" onchange="adminUpdateGradeNote(\'' + s.id + '\',\'' + subject + '\',this.value)" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-600" placeholder="ملاحظة..."></td>' +
             '<td class="p-3 text-center">' + (rec.submitted ? '<span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-lg text-xs font-bold">مُسلَّمة</span>' : '<span class="bg-amber-100 text-amber-700 px-2 py-1 rounded-lg text-xs font-bold">مسودة</span>') + '</td>' +
-            '<td class="p-3 text-center"><button onclick="adminDeleteGrade(\'' + s.id + '\',\'' + subject + '\')" class="text-red-500 hover:text-red-700 px-2.5 py-1 rounded-lg text-xs font-semibold transition"><i class="fa-solid fa-trash"></i> حذف</button></td>' +
-        '</tr>';
+            '<td class="p-3 text-center"><button onclick="adminDeleteGrade(\'' + s.id + '\',\'' + subject + '\')" class="text-red-500 hover:text-red-700 px-2.5 py-1 rounded-lg text-xs font-semibold transition"><i class="fa-solid fa-trash"></i> حذف</button></td></tr>';
         tbody.innerHTML += rowHTML;
     });
 };
@@ -957,7 +1104,7 @@ window.loadAdminStudentGradesTable = function () {
 window.adminUpdateGradePart = function (studentId, subject, partName, maxVal, inputEl) {
     let val = parseFloat(inputEl.value);
     if (isNaN(val) || val < 0) val = 0;
-    if (val > maxVal) { showToast('الدرجة القصوى ' + maxVal, 'error'); inputEl.value = maxVal; val = maxVal; }
+    if (val > maxVal) { showToast('القصوى ' + maxVal, 'error'); inputEl.value = maxVal; val = maxVal; }
     if (!gradesData[studentId]) gradesData[studentId] = {};
     if (!gradesData[studentId][subject]) gradesData[studentId][subject] = { parts: {}, note: '', reductionReasons: {}, submitted: false };
     if (!gradesData[studentId][subject].parts) gradesData[studentId][subject].parts = {};
@@ -971,7 +1118,7 @@ window.adminUpdateGradePart = function (studentId, subject, partName, maxVal, in
     });
     const cell = document.getElementById('adminTotalCell_' + studentId + '_' + subject);
     if (cell) cell.textContent = total + ' / 100';
-    showToast('تم تحديث الدرجة');
+    showToast('تم التحديث');
 };
 
 window.adminUpdateGradeNote = function (studentId, subject, noteVal) {
@@ -983,7 +1130,7 @@ window.adminUpdateGradeNote = function (studentId, subject, noteVal) {
 };
 
 window.adminDeleteGrade = function (studentId, subject) {
-    if (!confirm('حذف كامل درجات الطالب في هذه المادة؟')) return;
+    if (!confirm('حذف كامل درجات الطالب؟')) return;
     if (gradesData[studentId] && gradesData[studentId][subject]) {
         delete gradesData[studentId][subject];
         saveToLocalStorage();
@@ -993,13 +1140,12 @@ window.adminDeleteGrade = function (studentId, subject) {
 };
 
 // ========================================================
-// 13. الشكاوى (Admin)
+// 14. الشكاوى (Admin)
 // ========================================================
 function updateAdminComplaintBadgeCount() {
     const el = document.getElementById('adminComplaintBadgeCount');
     if (!el) return;
-    const count = complaints.filter(function (c) { return !c.reply; }).length;
-    el.textContent = count;
+    el.textContent = complaints.filter(function (c) { return !c.reply; }).length;
 }
 
 function renderAdminComplaints() {
@@ -1010,7 +1156,6 @@ function renderAdminComplaints() {
     let filtered = complaints.slice();
     if (filter === 'parent_to_teacher') filtered = filtered.filter(function (c) { return c.type === 'parent_to_teacher'; });
     else if (filter === 'teacher_to_parent') filtered = filtered.filter(function (c) { return c.type === 'teacher_to_parent'; });
-
     if (filtered.length === 0) {
         container.innerHTML = '<p class="text-sm text-slate-400 text-center py-4">لا توجد شكاوى</p>';
         return;
@@ -1027,7 +1172,7 @@ function renderAdminComplaints() {
                 '<div class="flex justify-between items-start flex-wrap gap-2">' +
                     '<div class="space-y-1"><div class="flex items-center gap-2 flex-wrap">' +
                         '<h4 class="font-bold text-slate-800">' + c.title + '</h4>' + typeLabel +
-                    '</div><p class="text-xs text-slate-500">من: <strong>' + fromName + '</strong> — إلى: <strong>' + toName + '</strong> — الطالب: <strong>' + c.studentName + '</strong> (' + c.grade + ')</p></div>' +
+                    '</div><p class="text-xs text-slate-500">من: <strong>' + fromName + '</strong> — إلى: <strong>' + toName + '</strong></p></div>' +
                     '<span class="text-[10px] text-slate-400">' + c.date + '</span>' +
                 '</div>' +
                 '<p class="text-sm text-slate-700 bg-white p-3 rounded-lg border border-slate-100">' + c.text + '</p>' +
@@ -1067,12 +1212,12 @@ window.handleAdminUpdateComplaint = function (e) {
         closeAdminEditComplaintModal();
         renderAdminComplaints();
         updateAdminComplaintBadgeCount();
-        showToast('تم تعديل الشكوى');
+        showToast('تم التعديل');
     }
 };
 
 window.deleteAdminComplaint = function (id) {
-    if (!confirm('حذف هذه الشكوى نهائياً؟')) return;
+    if (!confirm('حذف الشكوى نهائياً؟')) return;
     complaints = complaints.filter(function (c) { return c.id !== id; });
     saveToLocalStorage();
     renderAdminComplaints();
@@ -1081,7 +1226,7 @@ window.deleteAdminComplaint = function (id) {
 };
 
 // ========================================================
-// 14. لوحة المعلم
+// 15. لوحة المعلم
 // ========================================================
 window.switchTeacherTab = function (tab) {
     const gradesBtn = document.getElementById('teacherTabGradesBtn');
@@ -1114,21 +1259,18 @@ window.switchTeacherTab = function (tab) {
     }
 };
 
-// إضافة طالب من المعلم
 window.handleLeaderAddStudent = function (e) {
     e.preventDefault();
     const name = document.getElementById('leaderNewStudentName').value.trim();
     const regNo = document.getElementById('leaderNewStudentRegNo').value.trim();
     const grade = currentSession.leadClass;
-    if (students.some(function (s) { return s.id === regNo; })) {
-        showToast('رقم التسجيل مستخدم مسبقاً!', 'error'); return;
-    }
+    if (students.some(function (s) { return s.id === regNo; })) { showToast('مستخدم!', 'error'); return; }
     students.push({ id: regNo, name: name, grade: grade, addedByTeacher: true });
     saveToLocalStorage();
     renderLeaderStudentsTable();
     document.getElementById('leaderNewStudentName').value = '';
     document.getElementById('leaderNewStudentRegNo').value = '';
-    showToast('تمت إضافة الطالب');
+    showToast('تمت الإضافة');
 };
 
 function renderLeaderStudentsTable() {
@@ -1138,7 +1280,7 @@ function renderLeaderStudentsTable() {
     const myGrade = currentSession.leadClass;
     const myStudents = students.filter(function (s) { return s.grade === myGrade; });
     if (myStudents.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-400">لا يوجد طلاب في فصلك</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-400">لا يوجد طلاب</td></tr>';
         return;
     }
     myStudents.forEach(function (s) {
@@ -1150,7 +1292,7 @@ function renderLeaderStudentsTable() {
 }
 
 // ========================================================
-// 15. جدول الدرجات للمعلم (مع سبب الخصم)
+// 16. جدول درجات المعلم
 // ========================================================
 function checkGradesSubmittedForClass(grade, subject) {
     const classStudents = students.filter(function (s) { return s.grade === grade; });
@@ -1214,15 +1356,12 @@ function loadTeacherStudentsTable() {
             const disabledAttr = isSubmitted ? 'disabled' : '';
             const bgClass = isSubmitted ? 'bg-slate-100 text-slate-500' : 'bg-slate-50';
             const reason = rec.reductionReasons[item.name];
-            const reasonHTML = reason
-                ? '<div class="reduction-reason-display mt-1 text-right">سبب الخصم: ' + reason + '</div>'
-                : '';
+            const reasonHTML = reason ? '<div style="font-size:10px;color:#b45309;background:#fef3c7;padding:3px 6px;border-radius:6px;display:block;margin-top:4px;border:1px solid #fcd34d;text-align:right;line-height:1.4;">سبب الخصم: ' + reason + '</div>' : '';
             rowHTML += '<td class="p-3 text-center">' +
                 '<input type="number" min="0" max="' + item.max + '" value="' + val + '" ' + disabledAttr + ' ' +
                 'onchange="updateGradePart(\'' + s.id + '\',\'' + subject + '\',\'' + item.name.replace(/'/g, "\\'") + '\',' + item.max + ',this)" ' +
                 'class="w-16 p-1.5 ' + bgClass + ' border border-slate-200 rounded-xl text-sm font-bold text-center focus:outline-none focus:border-emerald-600" placeholder="0">' +
-                reasonHTML +
-            '</td>';
+                reasonHTML + '</td>';
         });
 
         const noteDisabled = isSubmitted ? 'disabled' : '';
@@ -1234,8 +1373,10 @@ function loadTeacherStudentsTable() {
     });
 }
 
-// ✅ تحديث الدرجة مع طلب سبب الخصم عند تجاوز 6 درجات
+// ✅ 17. تحديث الدرجة - النافذة تظهر عند خصم > 3 من الدرجة القصوى
 window.updateGradePart = function (studentId, subject, partName, maxVal, inputEl) {
+    console.log('🟢 updateGradePart:', studentId, partName, 'value:', inputEl.value, '| max:', maxVal);
+
     const rec = (gradesData[studentId] && gradesData[studentId][subject]) || null;
     if (currentSession.role === 'teacher' && rec && rec.submitted) {
         showToast('الدرجات مرسلة، لا يمكن التعديل', 'error');
@@ -1247,7 +1388,8 @@ window.updateGradePart = function (studentId, subject, partName, maxVal, inputEl
     if (isNaN(newVal) || newVal < 0) newVal = 0;
     if (newVal > maxVal) {
         showToast('الدرجة القصوى ' + maxVal, 'error');
-        inputEl.value = maxVal; newVal = maxVal;
+        inputEl.value = maxVal;
+        newVal = maxVal;
     }
 
     if (!gradesData[studentId]) gradesData[studentId] = {};
@@ -1256,58 +1398,50 @@ window.updateGradePart = function (studentId, subject, partName, maxVal, inputEl
     if (!record.parts) record.parts = {};
     if (!record.reductionReasons) record.reductionReasons = {};
 
-    const oldVal = record.parts[partName] !== undefined ? parseFloat(record.parts[partName]) : null;
+    // ✅ القاعدة الجديدة: الفرق بين الدرجة القصوى والقيمة المُدخلة
+    const diffFromMax = maxVal - newVal;
+    console.log('   diffFromMax:', diffFromMax, '| > 3 ?', diffFromMax > 3);
 
-    // قاعدة الـ6 درجات: إذا التخفيض أكثر من 6، اطلب سبباً
-    if (currentSession.role === 'teacher' && oldVal !== null && (oldVal - newVal) > 6) {
-        let reason = record.reductionReasons[partName] || '';
-        if (!reason) {
-            const prompt_val = window.prompt(
-                'أنت على وشك تخفيض درجة الطالب في بند "' + partName + '" من ' + oldVal + ' إلى ' + newVal +
-                ' (تخفيض ' + (oldVal - newVal) + ' درجات).\n\nيرجى كتابة سبب الخصم (إلزامي):',
-                ''
-            );
-            if (!prompt_val || !prompt_val.trim()) {
-                showToast('يجب كتابة سبب الخصم عند تخفيض أكثر من 6 درجات', 'error');
-                inputEl.value = oldVal;
-                return;
-            }
-            reason = prompt_val.trim();
-            record.reductionReasons[partName] = reason;
-            // أضف أيضاً للملاحظة العامة للتوضيح
-            const noteAdd = 'سبب خصم بند "' + partName + '": ' + reason;
-            record.note = record.note ? (record.note + ' | ' + noteAdd) : noteAdd;
-            const noteInput = document.querySelector('[data-grade-note="' + studentId + '_' + subject + '"]');
-            if (noteInput) noteInput.value = record.note;
-        }
+    if (currentSession.role === 'teacher' && diffFromMax > 3) {
+        const existingReason = record.reductionReasons[partName] || '';
+        const student = students.find(function (x) { return x.id === studentId; });
+        const studentName = student ? student.name : studentId;
+        console.log('🔔 خصم من القصوى > 3 → فتح النافذة');
+
+        // احفظ القيمة القديمة لأجل الإلغاء
+        const prevVal = record.parts[partName] !== undefined ? record.parts[partName] : '';
+        inputEl.setAttribute('data-prev-val', prevVal);
+
+        openReductionReasonModal(
+            studentId, subject, partName,
+            maxVal,
+            maxVal,
+            newVal,
+            inputEl,
+            existingReason,
+            studentName
+        );
+        return;
     }
 
+    // حفظ مباشر (الفرق ≤ 3)
     record.parts[partName] = newVal;
-    saveToLocalStorage();
 
-    let total = 0;
-    const schema = getTeacherSchema(subject);
-    schema.forEach(function (item) {
-        const v = record.parts[item.name];
-        if (v !== undefined && v !== '') total += parseFloat(v) || 0;
-    });
-    const totalCell = document.getElementById('totalCell_' + studentId + '_' + subject);
-    if (totalCell) totalCell.textContent = total + ' / 100';
-
-    // ✅ أعِد رسم الخلية لعرض سبب الخصم مباشرة
-    if (record.reductionReasons[partName]) {
-        const cell = inputEl.closest('td');
-        if (cell) {
-            let reasonEl = cell.querySelector('.reduction-reason-display');
-            if (!reasonEl) {
-                reasonEl = document.createElement('div');
-                reasonEl.className = 'reduction-reason-display mt-1 text-right';
-                cell.appendChild(reasonEl);
-            }
-            reasonEl.textContent = 'سبب الخصم: ' + record.reductionReasons[partName];
+    // إن رفع الدرجة أو أصبح الفرق ≤ 3 → احذف سبب الخصم القديم
+    if (record.reductionReasons[partName] && diffFromMax <= 3) {
+        delete record.reductionReasons[partName];
+        if (record.note) {
+            const oldMarker = 'سبب خصم بند "' + partName + '"';
+            record.note = record.note.split(' | ').filter(function (s) {
+                return s.indexOf(oldMarker) === -1;
+            }).join(' | ');
         }
+        const noteInput = document.querySelector('[data-grade-note="' + studentId + '_' + subject + '"]');
+        if (noteInput) noteInput.value = record.note;
     }
 
+    saveToLocalStorage();
+    updateTeacherTotalAndReason(studentId, subject, partName, inputEl);
     showToast('تم حفظ الدرجة');
 };
 
@@ -1327,11 +1461,8 @@ window.submitTeacherGrades = function () {
     const grade = document.getElementById('teacherTargetGrade').value;
     const subject = currentSession.subject;
     const classStudents = students.filter(function (s) { return s.grade === grade; });
-    if (classStudents.length === 0) {
-        showToast('لا يوجد طلاب في هذا الصف', 'error'); return;
-    }
+    if (classStudents.length === 0) { showToast('لا يوجد طلاب', 'error'); return; }
     if (!confirm('إرسال الدرجات للإدارة؟ بعد الإرسال لن تتمكن من التعديل.')) return;
-
     classStudents.forEach(function (s) {
         if (!gradesData[s.id]) gradesData[s.id] = {};
         if (!gradesData[s.id][subject]) gradesData[s.id][subject] = { parts: {}, note: '', reductionReasons: {}, submitted: false };
@@ -1340,11 +1471,11 @@ window.submitTeacherGrades = function () {
     });
     saveToLocalStorage();
     loadTeacherStudentsTable();
-    showToast('تم إرسال الدرجات للإدارة');
+    showToast('تم الإرسال للإدارة');
 };
 
 // ========================================================
-// 16. شكاوى المعلم مع أولياء الأمور
+// 18. شكاوى المعلم مع أولياء الأمور
 // ========================================================
 function populateParentTargetSelect() {
     const sel = document.getElementById('teacherParentTargetStudent');
@@ -1372,8 +1503,7 @@ window.handleTeacherSendToParent = function (e) {
         studentId: student.id, studentName: student.name, grade: student.grade,
         teacherId: currentSession.id, teacherName: currentSession.name,
         title: title, text: text,
-        date: new Date().toLocaleDateString('ar-SA'),
-        reply: ''
+        date: new Date().toLocaleDateString('ar-SA'), reply: ''
     });
     saveToLocalStorage();
     document.getElementById('teacherToParentTitle').value = '';
@@ -1381,7 +1511,7 @@ window.handleTeacherSendToParent = function (e) {
     document.getElementById('teacherParentTargetStudent').value = '';
     renderTeacherParentComplaints();
     updateAdminComplaintBadgeCount();
-    showToast('تم إرسال الرسالة');
+    showToast('تم الإرسال');
 };
 
 function renderTeacherParentComplaints() {
@@ -1389,24 +1519,21 @@ function renderTeacherParentComplaints() {
     if (!container) return;
     container.innerHTML = '';
     const myId = currentSession.id;
-
     const incoming = complaints.filter(function (c) { return c.type === 'parent_to_teacher' && c.teacherId === myId; });
     const outgoing = complaints.filter(function (c) { return c.type === 'teacher_to_parent' && c.teacherId === myId; });
-
     if (incoming.length === 0 && outgoing.length === 0) {
-        container.innerHTML = '<p class="text-sm text-slate-400 text-center py-4">لا توجد شكاوى أو رسائل</p>';
+        container.innerHTML = '<p class="text-sm text-slate-400 text-center py-4">لا توجد شكاوى</p>';
         return;
     }
-
     if (incoming.length > 0) {
-        container.innerHTML += '<h4 class="font-bold text-amber-700 text-sm mt-2 mb-2"><i class="fa-solid fa-arrow-down"></i> شكاوى واردة من أولياء الأمور</h4>';
+        container.innerHTML += '<h4 class="font-bold text-amber-700 text-sm mt-2 mb-2"><i class="fa-solid fa-arrow-down"></i> شكاوى واردة</h4>';
         incoming.sort(function (a, b) { return (b.id > a.id) ? 1 : -1; });
         incoming.forEach(function (c) {
             container.innerHTML +=
                 '<div class="p-4 bg-amber-50 rounded-xl border border-amber-200 space-y-3">' +
                     '<div class="flex justify-between items-center">' +
                         '<div><h4 class="font-bold text-slate-800">' + c.title + '</h4>' +
-                        '<p class="text-xs text-slate-500">الطالب: <strong>' + c.studentName + '</strong> — رقم: ' + c.studentId + '</p></div>' +
+                        '<p class="text-xs text-slate-500">الطالب: <strong>' + c.studentName + '</strong></p></div>' +
                         '<span class="text-xs text-slate-400">' + c.date + '</span>' +
                     '</div>' +
                     '<p class="text-sm text-slate-700 bg-white p-3 rounded-lg border border-slate-100">' + c.text + '</p>' +
@@ -1417,16 +1544,15 @@ function renderTeacherParentComplaints() {
                     '</div></div></div>';
         });
     }
-
     if (outgoing.length > 0) {
-        container.innerHTML += '<h4 class="font-bold text-emerald-700 text-sm mt-4 mb-2"><i class="fa-solid fa-arrow-up"></i> رسائل أرسلتها لأولياء الأمور</h4>';
+        container.innerHTML += '<h4 class="font-bold text-emerald-700 text-sm mt-4 mb-2"><i class="fa-solid fa-arrow-up"></i> رسائل أرسلتها</h4>';
         outgoing.sort(function (a, b) { return (b.id > a.id) ? 1 : -1; });
         outgoing.forEach(function (c) {
             container.innerHTML +=
                 '<div class="p-4 bg-emerald-50 rounded-xl border border-emerald-200 space-y-2">' +
                     '<div class="flex justify-between items-center">' +
                         '<div><h4 class="font-bold text-slate-800">' + c.title + '</h4>' +
-                        '<p class="text-xs text-slate-500">إلى ولي أمر: <strong>' + c.studentName + '</strong></p></div>' +
+                        '<p class="text-xs text-slate-500">إلى: <strong>' + c.studentName + '</strong></p></div>' +
                         '<span class="text-xs text-slate-400">' + c.date + '</span>' +
                     '</div>' +
                     '<p class="text-sm text-slate-700 bg-white p-3 rounded-lg border border-slate-100">' + c.text + '</p>' +
@@ -1453,14 +1579,13 @@ function updateTeacherComplaintBadgeCount() {
     const el = document.getElementById('teacherComplaintBadgeCount');
     if (!el) return;
     const myId = currentSession.id;
-    const count = complaints.filter(function (c) {
+    el.textContent = complaints.filter(function (c) {
         return c.type === 'parent_to_teacher' && c.teacherId === myId && !c.reply;
     }).length;
-    el.textContent = count;
 }
 
 // ========================================================
-// 17. بوابة ولي الأمر (مع عرض سبب الخصم)
+// 19. بوابة ولي الأمر
 // ========================================================
 function loadParentData() {
     const studentId = currentSession.studentId;
@@ -1486,7 +1611,7 @@ function loadParentData() {
 
         if (subRec && subRec.parts) {
             if (subRec.submitted !== true) {
-                detailsText = '<span class="text-amber-600 text-xs">قيد الإدخال (لم تُرسل بعد)</span>';
+                detailsText = '<span class="text-amber-600 text-xs">قيد الإدخال</span>';
             } else {
                 let partsArray = []; let hasValue = false;
                 schema.forEach(function (item) {
@@ -1500,10 +1625,9 @@ function loadParentData() {
                 if (hasValue) {
                     detailsText = '<span class="font-bold text-slate-800">' + totalScore + '/100</span> <span class="text-xs text-slate-500 block">(' + partsArray.join(' - ') + ')</span>';
                 }
-                // ✅ عرض أسباب الخصم لولي الأمر
                 if (subRec.reductionReasons) {
                     Object.keys(subRec.reductionReasons).forEach(function (k) {
-                        reasonsHTML += '<div class="reduction-reason-display mt-1">خصم في "' + k + '": ' + subRec.reductionReasons[k] + '</div>';
+                        reasonsHTML += '<div style="font-size:10px;color:#b45309;background:#fef3c7;padding:3px 6px;border-radius:6px;display:block;margin-top:4px;border:1px solid #fcd34d;text-align:right;line-height:1.4;">خصم في "' + k + '": ' + subRec.reductionReasons[k] + '</div>';
                     });
                 }
             }
@@ -1529,17 +1653,14 @@ window.handleSendComplaint = function (e) {
     const studentId = currentSession.studentId;
     const student = students.find(function (s) { return s.id === studentId; });
     const classTeacher = teachers.find(function (t) { return t.leadClass === student.grade; });
-    if (!classTeacher) {
-        showToast('لا يوجد رائد فصل لهذا الصف', 'error'); return;
-    }
+    if (!classTeacher) { showToast('لا يوجد رائد فصل', 'error'); return; }
     complaints.push({
         id: 'c_' + Date.now(),
         type: 'parent_to_teacher',
         studentId: student.id, studentName: student.name, grade: student.grade,
         teacherId: classTeacher.id, teacherName: classTeacher.name,
         title: title, text: text,
-        date: new Date().toLocaleDateString('ar-SA'),
-        reply: ''
+        date: new Date().toLocaleDateString('ar-SA'), reply: ''
     });
     saveToLocalStorage();
     closeComplaintModal();
@@ -1547,7 +1668,7 @@ window.handleSendComplaint = function (e) {
     document.getElementById('complaintText').value = '';
     renderParentComplaints();
     updateAdminComplaintBadgeCount();
-    showToast('تم إرسال الشكوى لرائد الفصل');
+    showToast('تم إرسال الشكوى');
 };
 
 function renderParentComplaints() {
@@ -1557,7 +1678,7 @@ function renderParentComplaints() {
     const studentId = currentSession.studentId;
     const myComplaints = complaints.filter(function (c) { return c.studentId === studentId; });
     if (myComplaints.length === 0) {
-        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-2">لا توجد شكاوى أو رسائل بعد</p>';
+        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-2">لا توجد شكاوى</p>';
         return;
     }
     myComplaints.sort(function (a, b) { return (b.id > a.id) ? 1 : -1; });
@@ -1585,19 +1706,16 @@ function renderParentComplaints() {
 }
 
 // ========================================================
-// 18. التهيئة عند التحميل
+// 20. التهيئة
 // ========================================================
 window.addEventListener('DOMContentLoaded', function () {
-    console.log('✅ تم تحميل script.js - النسخة النهائية مع جميع التعديلات');
+    console.log('✅ script.js V2.3 محمّل - نافذة سبب الخصم تعمل بناءً على الدرجة القصوى');
 
-    // تأكد من عدم وجود جلسة قديمة عند تحميل الصفحة أول مرة
-    // (هذا يمنع دخول المستخدم بدون كلمة مرور إذا كانت الجلسة القديمة موجودة)
     try {
         const sessionRaw = localStorage.getItem('amal_school_session');
         if (sessionRaw) {
             const session = JSON.parse(sessionRaw);
             if (!session || !session.role || !session.name) {
-                // جلسة تالفة
                 localStorage.removeItem('amal_school_session');
                 currentSession = null;
             }
